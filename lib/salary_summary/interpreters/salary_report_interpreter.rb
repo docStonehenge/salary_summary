@@ -9,7 +9,10 @@ module SalarySummary
 
       def read_from_file(file_name)
         CSV.foreach("#{Dir.home}/salary_summary/#{file_name}.csv") do |entry|
-          entries[entry[0].to_sym] = entry[1].to_f unless total_salary_entry?(entry)
+          unless total_salary_entry?(entry)
+            entries[entry[0].downcase.to_sym] = entry[1].to_f
+          end
+
           self.sum = entry[1].to_f if total_salary_entry?(entry)
         end
       end

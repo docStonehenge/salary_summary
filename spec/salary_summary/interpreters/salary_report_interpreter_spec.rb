@@ -9,8 +9,8 @@ module SalarySummary
         before do
           FileUtils.mkdir("#{Dir.home}/salary_summary")
           File.open("#{Dir.home}/salary_summary/test.csv", 'w') do |f|
-            f.puts 'january, 200.0'
-            f.puts 'february, 200.0'
+            f.puts 'January, 200.0'
+            f.puts 'February, 200.0'
             f.puts 'Annual Salary, 400.0'
           end
         end

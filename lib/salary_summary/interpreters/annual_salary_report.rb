@@ -10,7 +10,7 @@ module SalarySummary
 
         File.open("#{Dir.home}/salary_summary/#{file_name}.csv", 'w') do |f|
           @calculator.salaries.each do |period, amount|
-            f.puts "#{period}, #{amount}"
+            f.puts "#{period.capitalize}, #{amount}"
           end
 
           f.puts "Annual Salary, #{@calculator.total_amount}"
