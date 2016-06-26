@@ -3,7 +3,7 @@ require 'spec_helper'
 module SalarySummary
   module Interpreters
     describe SalaryReportInterpreter do
-      it { is_expected.to have_attributes(entries: {}, sum: 0) }
+      it { is_expected.to have_attributes(salaries: {}, total_amount: 0) }
 
       describe '#read_from_file file_name' do
         before do
@@ -21,9 +21,9 @@ module SalarySummary
 
         it 'reads csv file based on file name and passes information to calculator' do
           subject.read_from_file('test')
-          expect(subject.entries).to include january: 200.0, february: 200.0
-          expect(subject.entries).not_to include :"Annual Salary" => 400.0
-          expect(subject.sum).to eql 400.0
+          expect(subject.salaries).to include january: 200.0, february: 200.0
+          expect(subject.salaries).not_to include :"Annual Salary" => 400.0
+          expect(subject.total_amount).to eql 400.0
         end
       end
     end
