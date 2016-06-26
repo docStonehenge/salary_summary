@@ -5,8 +5,8 @@ module SalarySummary
         @calculator = calculator
       end
 
-      def save_as_simple_document
-        File.open("#{Dir.home}/annual_salary_report.csv", 'w') do |f|
+      def save_as_simple_document(file_name)
+        File.open("#{Dir.home}/#{file_name}.csv", 'w') do |f|
           @calculator.salaries.each do |period, amount|
             f.puts "#{period}, #{amount}"
           end

@@ -10,7 +10,7 @@ module SalarySummary
       end
 
       let(:produced_report) do
-        CSV.read("#{Dir.home}/annual_salary_report.csv")
+        CSV.read("#{Dir.home}/salary_report_test.csv")
       end
 
       subject { described_class.new(calculator) }
@@ -21,7 +21,7 @@ module SalarySummary
                                  january: 100.0, february: 200.0
                                )
 
-          subject.save_as_simple_document
+          subject.save_as_simple_document('salary_report_test')
 
           expect(produced_report).to eql expected_report
         end
