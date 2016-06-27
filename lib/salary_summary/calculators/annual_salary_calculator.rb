@@ -15,7 +15,7 @@ module SalarySummary
       end
 
       def sum!
-        salaries.each_value { |amount| self.total_amount += amount }
+        self.total_amount = salaries.values.reduce(0) { |sum, amount| sum += amount }
       end
     end
   end
