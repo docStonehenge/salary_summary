@@ -1,3 +1,100 @@
 #!/usr/bin/env ruby
 
 require "salary_summary"
+
+
+@calculator         = SalarySummary::Calculators::AnnualSalaryCalculator.new
+@report_interpreter = SalarySummary::Interpreters::SalaryReportInterpreter.new(@calculator)
+@table              = SalarySummary::Builders::TableBuilder.new(@calculator)
+@information        = ''
+
+COMMANDS = {
+  salary: "enter salary\n",
+  table: "print table\n",
+  save: "save\n",
+  entries: "load entries\n",
+  help: "help\n",
+  exit: "exit\n"
+}
+
+puts 'Hello !! Welcome to the Salary Summary !'
+puts "Commands are:"
+print COMMANDS.map { |_, value| value.tr("\n", '')  }.join(' - ')
+print "\n"
+puts 'Type Ctrl-C to exit.'
+print "\n"
+
+loop do
+  print 'What do you want to do ? '
+  command = gets
+  puts 'Command not found...' unless COMMANDS.values.include? command
+
+  case command
+  when COMMANDS.dig(:salary)
+    print 'Which period ? '
+    @information << "#{gets.tr("\n", '')}: "
+
+    if @information !~ /[a-zA-Z\:?]/
+      puts 'You have to enter a period first...'
+      redo
+    end
+
+    print 'Which value ? '
+
+    @information << gets
+
+    @calculator.enqueue(
+      SalarySummary::Interpreters::InformationInterpreter.parse!(@information)
+    )
+
+    @calculator.sum!
+
+    puts @calculator.total_amount
+    @information = ''
+  when COMMANDS.dig(:table)
+    if @calculator.total_amount.zero?
+      puts 'Enter your salary values first...'
+      redo
+    end
+
+    puts "---Period------Amount---"
+    @table.build_entries
+    print "\n"
+    @table.build_sum_footer
+  when COMMANDS.dig(:save)
+    if @calculator.total_amount.zero?
+      puts 'Enter your salary values first...'
+      redo
+    end
+
+    print 'Enter the report file name: '
+    file_name = gets.gsub(/\s*/, '')
+
+    SalarySummary::Interpreters::AnnualSalaryReport.new(
+      @calculator
+    ).save_as_simple_document(file_name)
+
+    puts 'Report file saved successfully !'
+  when COMMANDS.dig(:entries)
+    unless Dir.exist?("#{Dir.home}/salary_summary")
+      puts "You don't have any reports saved at the moment. You have to create your first one."
+      redo
+    end
+
+    print 'Enter the report file name: '
+    file_name = gets.gsub(/\s*/, '')
+
+    if File.exist?("#{Dir.home}/salary_summary/#{file_name}.csv")
+      @report_interpreter.read_from_file(file_name)
+      puts 'Report file loaded successfully !!'
+    else
+      puts 'This file does not exist. Please, try again...'
+      redo
+    end
+  when COMMANDS.dig(:exit)
+    puts 'Good-bye for now !!'
+    exit
+  end
+
+  print "\n"
+end
