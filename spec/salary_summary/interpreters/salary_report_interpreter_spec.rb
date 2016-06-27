@@ -3,7 +3,11 @@ require 'spec_helper'
 module SalarySummary
   module Interpreters
     describe SalaryReportInterpreter do
-      it { is_expected.to have_attributes(salaries: {}, total_amount: 0) }
+      let(:calculator) { double(:calculator) }
+      let(:january)    { double(:salary) }
+      let(:february)   { double(:salary) }
+
+      subject { described_class.new(calculator) }
 
       describe '#read_from_file file_name' do
         before do
@@ -20,10 +24,19 @@ module SalarySummary
         end
 
         it 'reads csv file based on file name and passes information to calculator' do
+          expect(Resources::Salary).to receive(:new).once.
+                                        with(amount: 200.0, period: 'January').
+                                        and_return january
+
+          expect(Resources::Salary).to receive(:new).once.
+                                        with(amount: 200.0, period: 'February').
+                                        and_return february
+
+          expect(calculator).to receive(:enqueue).with(january)
+          expect(calculator).to receive(:enqueue).with(february)
+          expect(calculator).to receive(:sum!).once
+
           subject.read_from_file('test')
-          expect(subject.salaries).to include january: 200.0, february: 200.0
-          expect(subject.salaries).not_to include :"Annual Salary" => 400.0
-          expect(subject.total_amount).to eql 400.0
         end
       end
     end
