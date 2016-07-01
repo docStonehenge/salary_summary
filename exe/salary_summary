@@ -49,7 +49,7 @@ loop do
 
     @calculator.sum!
 
-    puts @calculator.total_amount
+    puts "Your current annual salary sum is: $ #{@calculator.total_amount}"
     @information = ''
   when COMMANDS.dig(:table)
     if @calculator.total_amount.zero?
@@ -76,7 +76,7 @@ loop do
 
     puts 'Report file saved successfully !'
   when COMMANDS.dig(:entries)
-    unless Dir.exist?("#{Dir.home}/salary_summary")
+    unless Dir.entries("dump/salary_summary").size != 2
       puts "You don't have any reports saved at the moment. You have to create your first one."
       redo
     end
@@ -84,7 +84,7 @@ loop do
     print 'Enter the report file name: '
     file_name = gets.gsub(/\s*/, '')
 
-    if File.exist?("#{Dir.home}/salary_summary/#{file_name}.csv")
+    if File.exist?("dump/salary_summary/#{file_name}.csv")
       @report_interpreter.read_from_file(file_name)
       puts 'Report file loaded successfully !!'
     else
