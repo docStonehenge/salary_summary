@@ -11,8 +11,7 @@ module SalarySummary
 
       describe '#read_from_file file_name' do
         before do
-          FileUtils.mkdir("#{Dir.home}/salary_summary")
-          File.open("#{Dir.home}/salary_summary/test.csv", 'w') do |f|
+          File.open("dump/salary_summary/test.csv", 'w') do |f|
             f.puts 'January, 200.0'
             f.puts 'February, 200.0'
             f.puts 'Annual Salary, 400.0'
@@ -20,7 +19,7 @@ module SalarySummary
         end
 
         after do
-          FileUtils.remove_dir("#{Dir.home}/salary_summary")
+          FileUtils.rm('dump/salary_summary/test.csv')
         end
 
         it 'reads csv file based on file name and passes information to calculator' do

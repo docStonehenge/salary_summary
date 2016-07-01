@@ -6,7 +6,7 @@ module SalarySummary
       end
 
       def read_from_file(file_name)
-        CSV.foreach("#{Dir.home}/salary_summary/#{file_name}.csv") do |entry|
+        CSV.foreach("dump/salary_summary/#{file_name}.csv") do |entry|
           unless total_salary_entry?(entry)
             @calculator.enqueue(
               Resources::Salary.new(amount: entry[1].to_f, period: entry[0])

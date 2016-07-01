@@ -10,14 +10,14 @@ module SalarySummary
       end
 
       let(:produced_report) do
-        CSV.read("#{Dir.home}/salary_summary/salary_report_test.csv")
+        CSV.read("dump/salary_summary/salary_report_test.csv")
       end
 
       subject { described_class.new(calculator) }
 
       describe '#save_as_simple_document' do
         after do
-          FileUtils.remove_dir("#{Dir.home}/salary_summary")
+          FileUtils.rm("dump/salary_summary/salary_report_test.csv")
         end
 
         it 'creates directory and saves file with all salaries and total amount' do
