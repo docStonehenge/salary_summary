@@ -2,6 +2,9 @@ require "salary_summary/version"
 
 require 'csv'
 require 'fileutils'
+require 'mongo'
+
+require 'salary_summary/client'
 
 require 'salary_summary/resources/salary'
 require 'salary_summary/calculators/annual_salary_calculator'
