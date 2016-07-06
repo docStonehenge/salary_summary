@@ -5,14 +5,22 @@ module SalarySummary
     let(:mongodb_client) { double(:client) }
     let(:database)       { double(:database) }
 
-    it 'creates a MongoDB database and returns the client to be used' do
-      allow(::Mongo::Client).to receive(:new).with(
-                                'mongodb://127.0.0.1:27017/salary_summary'
-                                ).and_return mongodb_client
+    describe '.client' do
+      it 'sets MongoDB client to a database and returns the client to be used' do
+        allow(::Mongo::Client).to receive(:new).with(
+                                    'mongodb://127.0.0.1:27017/salary_summary'
+                                  ).and_return mongodb_client
 
+        expect(described_class.instance).to eql mongodb_client
+      end
+    end
+
+    describe '.database' do
+    it 'uses the client instance and returns the db to be used' do
+      expect(described_class).to receive(:instance).and_return mongodb_client
       expect(mongodb_client).to receive(:database).and_return database
-
       expect(described_class.database).to eql database
+    end
     end
   end
 end

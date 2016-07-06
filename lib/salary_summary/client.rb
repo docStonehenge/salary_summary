@@ -1,9 +1,13 @@
 module SalarySummary
   class Client
-    def self.database
+    def self.instance
       @db ||= ::Mongo::Client.new(
         'mongodb://127.0.0.1:27017/salary_summary'
-      ).database
+      )
+    end
+
+    def self.database
+      instance.database
     end
   end
 end
