@@ -14,6 +14,20 @@ module SalarySummary
           expect(described_class.collection('salaries')).to eql collection
         end
       end
+
+      describe '.save! salary, collection_name' do
+        it 'saves a salary instance on the correct collection' do
+          expect(described_class).to receive(
+                                       :collection
+                                     ).with('salaries').and_return collection
+
+          expect(collection).to receive(:insert_one).with(
+                                  period: 'January', amount: 150.0
+                                )
+
+          described_class.save! salary, 'salaries'
+        end
+      end
     end
   end
 end
