@@ -1,7 +1,7 @@
 require 'spec_helper'
 
 module SalarySummary
-  module Interpreters
+  module Exporters
     describe AnnualSalaryReport do
       let(:calculator) { double(:calculator, total_amount: 300.0) }
 
@@ -15,7 +15,7 @@ module SalarySummary
 
       subject { described_class.new(calculator) }
 
-      describe '#save_as_simple_document' do
+      describe '#save!' do
         after do
           FileUtils.rm("dump/salary_summary/salary_report_test.csv")
         end
@@ -25,7 +25,7 @@ module SalarySummary
                                  january: 100.0, february: 200.0
                                )
 
-          subject.save_as_simple_document('salary_report_test')
+          subject.save!('salary_report_test')
 
           expect(produced_report).to eql expected_report
         end

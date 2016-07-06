@@ -1,11 +1,11 @@
 module SalarySummary
-  module Interpreters
+  module Exporters
     class AnnualSalaryReport
       def initialize(calculator)
         @calculator = calculator
       end
 
-      def save_as_simple_document(file_name)
+      def save!(file_name)
         File.open("dump/salary_summary/#{file_name}.csv", 'w') do |f|
           @calculator.salaries.each do |period, amount|
             f.puts "#{period.capitalize}, #{amount}"

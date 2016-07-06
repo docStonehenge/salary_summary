@@ -70,9 +70,9 @@ loop do
     print 'Enter the report file name: '
     file_name = gets.gsub(/\s*/, '')
 
-    SalarySummary::Interpreters::AnnualSalaryReport.new(
+    SalarySummary::Exporters::AnnualSalaryReport.new(
       @calculator
-    ).save_as_simple_document(file_name)
+    ).save!(file_name)
 
     puts 'Report file saved successfully !'
   when COMMANDS.dig(:entries)
