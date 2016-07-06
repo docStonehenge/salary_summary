@@ -28,6 +28,24 @@ module SalarySummary
           described_class.save! salary, 'salaries'
         end
       end
+
+      describe '.find_on collection_name, option_hash' do
+        context 'when asked to be returned as a database entry' do
+          it 'finds a set of documents with the provided option' do
+            expect(described_class).to receive(
+                                         :collection
+                                       ).with('salaries').and_return collection
+
+            expect(collection).to receive(:find).with(
+                                    period: 'January'
+                                  ).and_return([{ period: 'January', amount: 150.0 }])
+
+            expect(
+              described_class.find_on('salaries', period: 'January')
+            ).to eql [{ period: 'January', amount: 150.0 }]
+          end
+        end
+      end
     end
   end
 end

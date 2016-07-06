@@ -10,6 +10,10 @@ module SalarySummary
           period: salary.period, amount: salary.amount
         )
       end
+
+      def self.find_on(collection_name, options)
+        collection(collection_name).find(options)
+      end
     end
   end
 end
