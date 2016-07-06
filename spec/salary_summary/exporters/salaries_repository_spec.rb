@@ -29,7 +29,7 @@ module SalarySummary
         end
       end
 
-      describe '.find_on collection_name, option_hash' do
+      describe '.find_on collection_name, as_object = false, option_hash' do
         context 'when asked to be returned as a database entry' do
           it 'finds a set of documents with the provided option' do
             expect(described_class).to receive(
@@ -43,6 +43,26 @@ module SalarySummary
             expect(
               described_class.find_on('salaries', period: 'January')
             ).to eql [{ period: 'January', amount: 150.0 }]
+          end
+        end
+
+        context 'when asked to be returned as a Salary object' do
+          it 'returns a set of Salary objects found on database' do
+            expect(described_class).to receive(
+                                         :collection
+                                       ).with('salaries').and_return collection
+
+            expect(collection).to receive(:find).with(
+                                    period: 'January'
+                                  ).and_return([{ '_id' => 1, 'period' => 'January', 'amount' => 150.0 }])
+
+            expect(Resources::Salary).to receive(:new).once.with(
+                                           id: 1, period: 'January', amount: 150.0
+                                         ).and_return salary
+
+            expect(
+              described_class.find_on('salaries', true, period: 'January')
+            ).to eql [salary]
           end
         end
       end

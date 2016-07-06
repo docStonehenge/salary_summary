@@ -11,9 +11,25 @@ module SalarySummary
         )
       end
 
-      def self.find_on(collection_name, options)
-        collection(collection_name).find(options)
+      def self.find_on(collection_name, as_object = false, options)
+        salaries = collection(collection_name).find(options)
+        return salaries unless as_object
+        transformed_entries_to_salaries(salaries)
       end
+
+      def self.transformed_entries_to_salaries(entries)
+        [].tap do |ary|
+          entries.each do |entry|
+            ary << Resources::Salary.new(
+              id: entry['_id'],
+              period: entry['period'],
+              amount: entry['amount']
+            )
+          end
+        end
+      end
+
+      private_class_method :transformed_entries_to_salaries
     end
   end
 end
