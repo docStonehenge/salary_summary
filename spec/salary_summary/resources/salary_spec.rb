@@ -6,7 +6,7 @@ module SalarySummary
       subject { described_class.new(amount: 200.0, period: 'January') }
 
       context 'attributes' do
-        it { is_expected.to have_attributes(amount: 200.0, period: 'January') }
+        it { is_expected.to have_attributes(id: nil, amount: 200.0, period: 'January') }
       end
     end
   end

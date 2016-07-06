@@ -1,10 +1,12 @@
 module SalarySummary
   module Resources
     class Salary
-      attr_reader :amount, :period
+      attr_reader :id, :amount, :period
 
-      def initialize(amount:, period:)
-        @amount, @period = amount, period
+      def initialize(id: nil, amount:, period:)
+        @id     = id
+        @amount = amount
+        @period = period
       end
     end
   end
