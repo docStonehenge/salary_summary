@@ -16,7 +16,7 @@ module SalarySummary
         end
       end
 
-      describe '.save! salary, collection_name' do
+      describe '.save salary, collection_name' do
         it 'saves a salary instance on the correct collection' do
           expect(described_class).to receive(
                                        :collection
@@ -26,7 +26,7 @@ module SalarySummary
                                   period: 'January', amount: 150.0
                                 )
 
-          described_class.save! salary, 'salaries'
+          described_class.save salary, 'salaries'
         end
       end
 

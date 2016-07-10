@@ -5,25 +5,22 @@ module SalarySummary
     describe AnnualSalaryCalculator do
       let(:january) { double(:salary, period: 'January', amount: 1000.0) }
 
-      it { is_expected.to have_attributes salaries: {}, total_amount: 0 }
+      subject { described_class.new(collection: 'salaries') }
 
       describe '#enqueue salary' do
-        it 'appends a salary to its hash with period as key' do
+        it 'saves the salary into the database for later use' do
+          expect(Exporters::SalariesRepository).to receive(:save).with(january, 'salaries')
           subject.enqueue january
-
-          expect(subject.salaries).to include january: 1000.0
         end
       end
 
-      describe '#sum!' do
-        it 'sums up all salaries amounts' do
-          allow(subject).to receive(:salaries).and_return(
-                              january: 1000.0, february: 1550.0
-                            )
+      describe '#sum' do
+        it 'sums up all salaries amounts using the repository' do
+          expect(
+            Exporters::SalariesRepository
+          ).to receive(:sum).with('salaries').and_return 1000.0
 
-          subject.sum!
-
-          expect(subject.total_amount).to eql 2550.0
+          expect(subject.sum).to eql 1000.0
         end
       end
     end

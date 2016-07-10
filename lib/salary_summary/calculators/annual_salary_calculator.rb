@@ -1,21 +1,16 @@
 module SalarySummary
   module Calculators
     class AnnualSalaryCalculator
-      attr_reader   :salaries
-      attr_accessor :total_amount
-
-      def initialize
-        @salaries, @total_amount = {}, 0
+      def initialize(collection:)
+        @collection = collection
       end
 
       def enqueue(salary)
-        salaries[
-          salary.period.downcase.to_sym
-        ] = salary.amount
+        Exporters::SalariesRepository.save salary, @collection
       end
 
-      def sum!
-        self.total_amount = salaries.values.reduce(0) { |sum, amount| sum += amount }
+      def sum
+        Exporters::SalariesRepository.sum @collection
       end
     end
   end
