@@ -17,6 +17,14 @@ module SalarySummary
         transformed_entries_to_salaries(salaries)
       end
 
+      def self.sum(collection_name)
+        collection(collection_name).aggregate(
+          [
+            { :$group => { _id: 'Sum',  sum: { :$sum => '$amount' } } }
+          ]
+        ).entries.first.dig('sum')
+      end
+
       def self.transformed_entries_to_salaries(entries)
         [].tap do |ary|
           entries.each do |entry|
