@@ -3,13 +3,13 @@ require 'spec_helper'
 module SalarySummary
   module Builders
     describe TableBuilder do
-      subject { described_class.new(using_repository: Exporters::SalariesRepository) }
+      let(:calculator) { double(:calculator) }
 
       before do
         $stdout = File.open(File::NULL)
       end
 
-      describe '#build_entries collection_name' do
+      describe '.build_entries collection_name' do
         it 'prints each entry on the table' do
           expect(
             Exporters::SalariesRepository
@@ -19,24 +19,24 @@ module SalarySummary
                ]
 
           expect {
-            subject.build_entries_on('salaries')
+            described_class.build_entries_on('salaries')
           }.to output(
                  "January----200.0\nFebruary----250.0\n"
                ).to_stdout
         end
       end
 
-      # describe '#build_sum_footer' do
-      #   it 'prints sum information footer on table' do
-      #     allow(salary_container).to receive(:total_amount).and_return 450.0
+      describe '.build_sum_footer_with calculator' do
+        it 'prints sum information footer on table' do
+          expect(calculator).to receive(:sum).and_return 450.0
 
-      #     expect {
-      #       subject.build_sum_footer
-      #     }.to output(
-      #            "Annual Salary----450.0\n"
-      #          ).to_stdout
-      #   end
-      # end
+          expect {
+            described_class.build_sum_footer_with(calculator)
+          }.to output(
+                 "Annual Salary----450.0\n"
+               ).to_stdout
+        end
+      end
     end
   end
 end
