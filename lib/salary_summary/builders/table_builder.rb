@@ -1,14 +1,18 @@
 module SalarySummary
   module Builders
     class TableBuilder
-      def self.build_entries_on(collection_name)
-        Exporters::SalariesRepository.find_on(collection_name).each do |entry|
+      def initialize(repository)
+        @repository = repository
+      end
+
+      def build_entries_on(collection_name)
+        @repository.find_on(collection_name).each do |entry|
           puts "#{entry.dig('period')}----#{entry.dig('amount')}"
         end
       end
 
-      def self.build_sum_footer_with(calculator)
-        puts "Annual Salary----#{calculator.sum}"
+      def build_sum_footer_for(collection_name)
+        puts "Annual Salary----#{@repository.sum(collection_name)}"
       end
     end
   end
