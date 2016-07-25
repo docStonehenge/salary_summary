@@ -3,8 +3,9 @@
 require "salary_summary"
 include SalarySummary
 
-@report_interpreter = Interpreters::SalaryReportInterpreter.new(@calculator)
-@information        = ''
+@repository    = Exporters::SalariesRepository
+@table_builder = Builders::TableBuilder.new(@repository)
+@information   = ''
 
 COMMANDS = {
   salary: "enter salary\n",
@@ -47,7 +48,7 @@ loop do
 
     collection_name = gets.gsub(/\s*/, '')
 
-    Exporters::SalariesRepository.save!(salary, collection_name)
+    @repository.save!(salary, collection_name)
 
     puts "Saved correctly into the database: period: #{salary.period}, amount: #{salary.amount}"
 
@@ -56,17 +57,16 @@ loop do
     print 'Enter the name of the collection: '
     collection_name = gets.gsub(/\s*/, '')
 
-    @calculator = Calculators::AnnualSalaryCalculator.new(collection: collection_name)
     print "\n"
     puts "---Period------Amount---"
-    Builders::TableBuilder.build_entries_on collection_name
+    @table_builder.build_entries_on collection_name
     print "\n"
-    Builders::TableBuilder.build_sum_footer_with @calculator
+    @table_builder.build_sum_footer_for collection_name
   when COMMANDS.dig(:export)
     print 'Enter the name of the collection: '
     collection_name = gets.gsub(/\s*/, '')
 
-    if @calculator.sum.zero? and Exporters::SalariesRepository.find_on(collection_name).none?
+    if @repository.sum(collection_name).zero? and @repository.find_on(collection_name).none?
       puts 'Enter your salary values first...'
       redo
     end
@@ -74,7 +74,7 @@ loop do
     print 'Enter the report file name: '
     file_name = gets.gsub(/\s*/, '')
 
-    Exporters::AnnualSalaryReport.new(@calculator).save(file_name)
+    Exporters::AnnualSalaryReport.new(@repository).save(collection_name, file_name)
 
     puts 'Report file saved successfully !'
   when COMMANDS.dig(:exit)
