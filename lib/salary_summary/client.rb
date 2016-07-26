@@ -6,8 +6,9 @@ module SalarySummary
       )
     end
 
-    def self.database
-      instance.database
+    def self.set_database_logging
+      Mongo::Logger.logger = ::Logger.new('dump/mongodb.log')
+      Mongo::Logger.logger.level = ::Logger::INFO
     end
   end
 end

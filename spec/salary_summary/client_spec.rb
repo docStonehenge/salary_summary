@@ -3,7 +3,7 @@ require 'spec_helper'
 module SalarySummary
   describe Client do
     let(:mongodb_client) { double(:client) }
-    let(:database)       { double(:database) }
+    let(:logger)         { double(:logger) }
 
     describe '.client' do
       it 'sets MongoDB client to a database and returns the client to be used' do
@@ -15,12 +15,14 @@ module SalarySummary
       end
     end
 
-    describe '.database' do
-    it 'uses the client instance and returns the db to be used' do
-      expect(described_class).to receive(:instance).and_return mongodb_client
-      expect(mongodb_client).to receive(:database).and_return database
-      expect(described_class.database).to eql database
-    end
+    describe '.set_database_logging' do
+      it 'sets the default database logging to a dump file' do
+        allow(Mongo::Logger).to receive(:logger).and_return logger
+        expect(Mongo::Logger).to receive(:logger=).with(an_instance_of(::Logger))
+        expect(logger).to receive(:level=).with(::Logger::INFO)
+
+        described_class.set_database_logging
+      end
     end
   end
 end

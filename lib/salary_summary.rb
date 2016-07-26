@@ -19,5 +19,7 @@ require 'salary_summary/exporters/annual_salary_report'
 require 'salary_summary/exporters/salaries_repository'
 
 module SalarySummary
-  # Your code goes here...
+  def self.included(_klass)
+    Client.set_database_logging
+  end
 end
