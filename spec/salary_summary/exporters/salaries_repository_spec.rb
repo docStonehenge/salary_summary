@@ -30,7 +30,7 @@ module SalarySummary
         end
       end
 
-      describe '.find_on collection_name, as_object = false, option_hash = {}' do
+      describe '.find_on collection_name, option_hash = {}' do
         context 'when provided with a option hash' do
           before do
             expect(described_class).to receive(
@@ -41,24 +41,14 @@ module SalarySummary
             expect(entries).to receive(:entries).and_return([{ '_id' => 1, 'period' => 'January', 'amount' => 150.0 }])
           end
 
-          context 'when asked to be returned as a database entry' do
-            it 'finds a set of documents with the provided option' do
-              expect(
-                described_class.find_on('salaries', false, period: 'January')
-              ).to eql([{ '_id' => 1, 'period' => 'January', 'amount' => 150.0 }])
-            end
-          end
+          it 'returns a set of Salary objects found on database' do
+            expect(Resources::Salary).to receive(:new).once.with(
+                                           id: 1, period: 'January', amount: 150.0
+                                         ).and_return salary
 
-          context 'when asked to be returned as a Salary object' do
-            it 'returns a set of Salary objects found on database' do
-              expect(Resources::Salary).to receive(:new).once.with(
-                                             id: 1, period: 'January', amount: 150.0
-                                           ).and_return salary
-
-              expect(
-                described_class.find_on('salaries', true, period: 'January')
-              ).to eql [salary]
-            end
+            expect(
+              described_class.find_on('salaries', period: 'January')
+            ).to eql [salary]
           end
         end
 
@@ -78,36 +68,21 @@ module SalarySummary
                                )
           end
 
-          context 'when asked to be returned as a database entry' do
-            it 'finds all documents' do
-              expect(
-                described_class.find_on('salaries')
-              ).to eql(
-                     [
-                       { '_id' => 1, 'period' => 'January', 'amount' => 150.0 },
-                       { '_id' => 2, 'period' => 'February', 'amount' => 200.0 }
-                     ]
-                   )
-            end
-          end
+          it 'returns all documents as Salary objects' do
+            january  = double(:salary, id: 1, period: 'January', amount: 150.0)
+            february = double(:salary, id: 2, period: 'February', amount: 200.0)
 
-          context 'when asked to be returned as a Salary object' do
-            it 'returns all documents as Salary objects' do
-              january  = double(:salary, id: 1, period: 'January', amount: 150.0)
-              february = double(:salary, id: 2, period: 'February', amount: 200.0)
+            expect(Resources::Salary).to receive(:new).once.with(
+                                           id: 1, period: 'January', amount: 150.0
+                                         ).and_return january
 
-              expect(Resources::Salary).to receive(:new).once.with(
-                                             id: 1, period: 'January', amount: 150.0
-                                           ).and_return january
+            expect(Resources::Salary).to receive(:new).once.with(
+                                           id: 2, period: 'February', amount: 200.0
+                                         ).and_return february
 
-              expect(Resources::Salary).to receive(:new).once.with(
-                                             id: 2, period: 'February', amount: 200.0
-                                           ).and_return february
-
-              expect(
-                described_class.find_on('salaries', true)
-              ).to eql [january, february]
-            end
+            expect(
+              described_class.find_on('salaries')
+            ).to eql [january, february]
           end
         end
       end

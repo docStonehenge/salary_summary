@@ -6,8 +6,8 @@ module SalarySummary
       end
 
       def build_entries_on(collection_name)
-        @repository.find_on(collection_name).each do |entry|
-          puts "#{entry.dig('period')}----#{entry.dig('amount')}"
+        @repository.find_on(collection_name).each do |salary|
+          puts "#{salary.period}----#{salary.amount}"
         end
       end
 

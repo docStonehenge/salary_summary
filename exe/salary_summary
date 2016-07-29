@@ -48,7 +48,7 @@ loop do
 
     collection_name = gets.gsub(/\s*/, '')
 
-    @repository.save!(salary, collection_name)
+    @repository.save(salary, collection_name)
 
     puts "Saved correctly into the database: period: #{salary.period}, amount: #{salary.amount}"
 

@@ -4,6 +4,8 @@ module SalarySummary
   module Builders
     describe TableBuilder do
       let(:repository) { double(:repository) }
+      let(:salary_1)   { double(:salary, period: 'January', amount: 200.0) }
+      let(:salary_2)   { double(:salary, period: 'February', amount: 250.0) }
 
       before do
         $stdout = File.open(File::NULL)
@@ -15,10 +17,8 @@ module SalarySummary
         it 'prints each entry on the table' do
           expect(
             repository
-          ).to receive(:find_on).with('salaries').and_return [
-                 { '_id' => 1, 'period' => 'January', 'amount' => 200.0 },
-                 { '_id' => 2, 'period' => 'February', 'amount' => 250.0 }
-               ]
+          ).to receive(:find_on).with('salaries').and_return [salary_1, salary_2]
+
 
           expect {
             subject.build_entries_on('salaries')

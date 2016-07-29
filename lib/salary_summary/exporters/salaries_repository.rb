@@ -11,10 +11,10 @@ module SalarySummary
         )
       end
 
-      def self.find_on(collection_name, as_object = false, options = {})
-        salaries = collection(collection_name).find(options).entries
-        return salaries unless as_object
-        transformed_entries_to_salaries(salaries)
+      def self.find_on(collection_name, options = {})
+        transformed_entries_to_salaries(
+          collection(collection_name).find(options).entries
+        )
       end
 
       def self.sum(collection_name)
