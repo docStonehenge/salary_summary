@@ -5,20 +5,16 @@ module SalarySummary
         Client.instance[:salaries]
       end
 
-      def self.save(salary, collection_name)
-        collection(collection_name).insert_one(
-          period: salary.period, amount: salary.amount
-        )
+      def self.save(salary)
+        collection.insert_one(period: salary.period, amount: salary.amount)
       end
 
-      def self.find_on(collection_name, options = {})
-        transformed_entries_to_salaries(
-          collection(collection_name).find(options).entries
-        )
+      def self.find(options = {})
+        transformed_entries_to_salaries(collection.find(options).entries)
       end
 
-      def self.sum(collection_name)
-        collection(collection_name).aggregate(
+      def self.sum
+        collection.aggregate(
           [
             { :$group => { _id: 'Sum',  sum: { :$sum => '$amount' } } }
           ]
