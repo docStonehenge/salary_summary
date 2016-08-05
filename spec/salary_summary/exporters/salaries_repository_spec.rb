@@ -8,11 +8,11 @@ module SalarySummary
       let(:entries)        { double(:entries) }
       let(:salary)         { double(:salary, period: 'January', amount: 150.0) }
 
-      describe '.collection name' do
-        it 'creates a collection based on a chosen name' do
+      describe '.collection' do
+        it 'creates a collection named salaries' do
           expect(Client).to receive(:instance).and_return mongodb_client
           expect(mongodb_client).to receive(:[]).with(:salaries).and_return collection
-          expect(described_class.collection('salaries')).to eql collection
+          expect(described_class.collection).to eql collection
         end
       end
 

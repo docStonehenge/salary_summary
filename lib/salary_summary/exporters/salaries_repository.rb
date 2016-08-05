@@ -1,8 +1,8 @@
 module SalarySummary
   module Exporters
     class SalariesRepository
-      def self.collection(name)
-        Client.instance[name.to_sym]
+      def self.collection
+        Client.instance[:salaries]
       end
 
       def self.save(salary, collection_name)
