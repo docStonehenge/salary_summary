@@ -44,9 +44,14 @@ loop do
     @information << gets
     salary = Interpreters::InformationInterpreter.new.parse(@information)
 
-    @repository.save(salary)
-
-    puts "Saved correctly into the database: period: #{salary.month}/#{salary.year}, amount: #{salary.amount}"
+    if salary
+      @repository.save(salary)
+      puts "Saved correctly into the database: period: #{salary.month}/#{salary.year}, amount: #{salary.amount}"
+    else
+      puts "We found an error to save that salary, buddy. Please, try again."
+      @information = ''
+      redo
+    end
 
     @information = ''
   when COMMANDS.dig(:table)
