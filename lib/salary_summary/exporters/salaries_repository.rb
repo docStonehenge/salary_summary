@@ -6,7 +6,9 @@ module SalarySummary
       end
 
       def self.save(salary)
-        collection.insert_one(period: salary.period, amount: salary.amount)
+        collection.insert_one(
+          month: salary.month, year: salary.year, amount: salary.amount
+        )
       end
 
       def self.find(options = {})
@@ -26,7 +28,7 @@ module SalarySummary
           entries.each do |entry|
             ary << Resources::Salary.new(
               id: entry['_id'],
-              period: entry['period'],
+              period: "#{entry['month']}, #{entry['year']}",
               amount: entry['amount']
             )
           end
