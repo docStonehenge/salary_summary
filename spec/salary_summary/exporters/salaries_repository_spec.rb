@@ -81,7 +81,7 @@ module SalarySummary
       end
 
       describe '.sum' do
-        it 'returns a document with the sum of all entries on the collection' do
+        before do
           expect(described_class).to receive(:collection).and_return collection
 
           expect(collection).to receive(:aggregate).with(
@@ -89,10 +89,17 @@ module SalarySummary
                                     { :$group => { _id: 'Sum', sum: { :$sum => '$amount' } } }
                                   ]
                                 ).and_return entries
+        end
 
+        it 'returns a document with the sum of all entries on the collection' do
           expect(entries).to receive(:entries).and_return [{ '_id' => 'Sum', 'sum' => 1000.0 }]
 
           expect(described_class.sum).to eql 1000.0
+        end
+
+        it 'returns zero if aggregation returns empty' do
+          expect(entries).to receive(:entries).and_return []
+          expect(described_class.sum).to be_zero
         end
       end
     end

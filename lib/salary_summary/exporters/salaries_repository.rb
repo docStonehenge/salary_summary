@@ -16,11 +16,9 @@ module SalarySummary
       end
 
       def self.sum
-        collection.aggregate(
-          [
-            { :$group => { _id: 'Sum',  sum: { :$sum => '$amount' } } }
-          ]
-        ).entries.first.dig('sum')
+        aggregation = salaries_sum_aggregation
+
+        aggregation.empty? ? 0 : aggregation.first.dig('sum')
       end
 
       def self.transformed_entries_to_salaries(entries)
@@ -35,7 +33,16 @@ module SalarySummary
         end
       end
 
-      private_class_method :transformed_entries_to_salaries
+      def self.salaries_sum_aggregation
+        collection.aggregate(
+          [
+            { :$group => { _id: 'Sum',  sum: { :$sum => '$amount' } } }
+          ]
+        ).entries
+      end
+
+      private_class_method :transformed_entries_to_salaries,
+                           :salaries_sum_aggregation
     end
   end
 end
