@@ -1,5 +1,6 @@
 require "salary_summary/version"
 
+require 'date'
 require 'csv'
 require 'fileutils'
 require 'mongo'

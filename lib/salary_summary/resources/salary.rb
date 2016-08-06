@@ -6,7 +6,7 @@ module SalarySummary
       def initialize(id: nil, amount:, period:)
         @id     = id
         @amount = amount
-        @period = period
+        @period = Date.parse(period)
       end
     end
   end
