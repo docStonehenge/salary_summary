@@ -8,6 +8,14 @@ module SalarySummary
         @amount = amount
         @period = Date.parse(period)
       end
+
+      def year
+        period.year
+      end
+
+      def month
+        period.strftime('%B')
+      end
     end
   end
 end
