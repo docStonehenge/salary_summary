@@ -5,15 +5,26 @@ module SalarySummary
     describe InformationInterpreter do
       let(:salary) { double(:salary) }
 
-      it 'parses a string to create a salary entry' do
-        expect(
-          Resources::Salary
-        ).to receive(:new).with(amount: 100.0, period: 'August, 2016').
-              and_return salary
+      describe 'parse' do
+        it 'parses a string to create a salary object' do
+          expect(
+            Resources::Salary
+          ).to receive(:new).with(amount: 100.0, period: 'August, 2016').
+                and_return salary
 
-        expect(
-          subject.parse "August/2016: R$ 100,00"
-        ).to eql salary
+          expect(
+            subject.parse "August/2016: R$ 100,00"
+          ).to eql salary
+        end
+
+        it 'halts execution if salary creation returns an error' do
+          expect(
+            Resources::Salary
+          ).to receive(:new).with(amount: 100.0, period: 'Foo, 2016').
+                and_raise Resources::Salary::PeriodError
+
+          expect(subject.parse('Foo/2016: R$100,00')).to be_nil
+        end
       end
     end
   end

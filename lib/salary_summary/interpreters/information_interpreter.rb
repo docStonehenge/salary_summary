@@ -6,6 +6,7 @@ module SalarySummary
           amount: normalize_amount(separated_entries_for(information)[1]),
           period: "#{formatted_period_on(information)[:month]}, #{formatted_period_on(information)[:year]}"
         )
+      rescue Resources::Salary::PeriodError
       end
 
       private
