@@ -1,22 +1,27 @@
 module SalarySummary
   module Interpreters
     class InformationInterpreter
-      def self.parse!(information)
+      def parse(information)
         Resources::Salary.new(
           amount: normalize_amount(separated_entries_for(information)[1]),
-          period: separated_entries_for(information)[0]
+          period: "#{formatted_period_on(information)[:month]}, #{formatted_period_on(information)[:year]}"
         )
       end
 
-      def self.separated_entries_for(information)
+      private
+
+      def separated_entries_for(information)
         information.split(':')
       end
 
-      def self.normalize_amount(entry)
+      def normalize_amount(entry)
         entry.sub(/^\s*\w*(\$)\s*/, '').to_f
       end
 
-      private_class_method :separated_entries_for, :normalize_amount
+      def formatted_period_on(information)
+        period = separated_entries_for(information)[0].split('/')
+        Hash[month: period[0], year: period[1]]
+      end
     end
   end
 end
