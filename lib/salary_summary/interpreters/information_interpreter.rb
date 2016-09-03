@@ -4,9 +4,12 @@ module SalarySummary
       def parse(information)
         Resources::Salary.new(
           amount: normalize_amount(separated_entries_for(information)[1]),
-          period: "#{formatted_period_on(information)[:month]}, #{formatted_period_on(information)[:year]}"
+          period: Date.parse(
+            "#{formatted_period_on(information)[:month]}, "\
+            "#{formatted_period_on(information)[:year]}"
+          )
         )
-      rescue Resources::Salary::PeriodError
+      rescue ArgumentError
       end
 
       private

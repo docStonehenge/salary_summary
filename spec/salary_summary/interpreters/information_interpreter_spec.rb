@@ -9,7 +9,7 @@ module SalarySummary
         it 'parses a string to create a salary object' do
           expect(
             Resources::Salary
-          ).to receive(:new).with(amount: 100.0, period: 'August, 2016').
+          ).to receive(:new).with(amount: 100.0, period: Date.parse('August, 2016')).
                 and_return salary
 
           expect(
@@ -18,11 +18,7 @@ module SalarySummary
         end
 
         it 'halts execution if salary creation returns an error' do
-          expect(
-            Resources::Salary
-          ).to receive(:new).with(amount: 100.0, period: 'Foo, 2016').
-                and_raise Resources::Salary::PeriodError
-
+          expect(Resources::Salary).not_to receive(:new).with(any_args)
           expect(subject.parse('Foo/2016: R$100,00')).to be_nil
         end
       end
