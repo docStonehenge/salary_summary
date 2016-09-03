@@ -4,10 +4,7 @@ module SalarySummary
       def parse(information)
         Resources::Salary.new(
           amount: normalize_amount(separated_entries_for(information)[1]),
-          period: Date.parse(
-            "#{formatted_period_on(information)[:month]}, "\
-            "#{formatted_period_on(information)[:year]}"
-          )
+          period: Date.parse(separated_entries_for(information)[0])
         )
       rescue ArgumentError
       end
@@ -20,11 +17,6 @@ module SalarySummary
 
       def normalize_amount(entry)
         entry.sub(/^\s*\w*(\$)\s*/, '').to_f
-      end
-
-      def formatted_period_on(information)
-        period = separated_entries_for(information)[0].split('/')
-        Hash[month: period[0], year: period[1]]
       end
     end
   end

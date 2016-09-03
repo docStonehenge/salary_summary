@@ -9,7 +9,7 @@ module SalarySummary
         it 'parses a string to create a salary object' do
           expect(
             Resources::Salary
-          ).to receive(:new).with(amount: 100.0, period: Date.parse('August, 2016')).
+          ).to receive(:new).with(amount: 100.0, period: Date.parse('August/2016')).
                 and_return salary
 
           expect(
