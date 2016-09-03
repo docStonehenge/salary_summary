@@ -6,7 +6,7 @@ module SalarySummary
       end
 
       def build_entries
-        @repository.find.each do |salary|
+        @repository.find_all.each do |salary|
           puts "#{salary.month}, #{salary.year} ---- #{salary.amount}"
         end
       end

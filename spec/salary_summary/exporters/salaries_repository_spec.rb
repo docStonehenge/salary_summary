@@ -28,7 +28,7 @@ module SalarySummary
         end
       end
 
-      describe '.find option_hash = {}' do
+      describe '.find_all option_hash = {}' do
         context 'when provided with a option hash' do
           before do
             expect(described_class).to receive(:collection).and_return collection
@@ -45,7 +45,7 @@ module SalarySummary
                                          ).and_return salary
 
             expect(
-              described_class.find(month: 'January')
+              described_class.find_all(month: 'January')
             ).to eql [salary]
           end
         end
@@ -75,7 +75,7 @@ module SalarySummary
                                            id: 2, period: 'February, 2016', amount: 200.0
                                          ).and_return february
 
-            expect(described_class.find).to eql [january, february]
+            expect(described_class.find_all).to eql [january, february]
           end
         end
       end

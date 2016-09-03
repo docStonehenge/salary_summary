@@ -11,7 +11,7 @@ module SalarySummary
         )
       end
 
-      def self.find(options = {})
+      def self.find_all(options = {})
         transformed_entries_to_salaries(collection.find(options).entries)
       end
 
