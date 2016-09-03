@@ -61,7 +61,7 @@ loop do
     print "\n"
     @table_builder.build_sum_footer
   when COMMANDS.dig(:export)
-    if @repository.sum.zero? and @repository.find_all.none?
+    if @repository.sum_by_amount.zero? and @repository.find_all.none?
       puts 'Enter your salary values first...'
       redo
     end

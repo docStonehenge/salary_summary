@@ -11,7 +11,7 @@ module SalarySummary
             f.puts "#{salary.month.capitalize}/#{salary.year}, #{salary.amount}"
           end
 
-          f.puts "Total, #{@repository.sum}"
+          f.puts "Total, #{@repository.sum_by_amount}"
         end
       end
     end

@@ -15,7 +15,7 @@ module SalarySummary
         transformed_entries_to_salaries(collection.find(options).entries)
       end
 
-      def self.sum
+      def self.sum_by_amount
         aggregation = salaries_sum_aggregation
 
         aggregation.empty? ? 0 : aggregation.first.dig('sum')

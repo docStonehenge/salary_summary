@@ -27,7 +27,7 @@ module SalarySummary
 
       describe '#build_sum_footer' do
         it 'prints sum information footer on table' do
-          expect(repository).to receive(:sum).and_return 450.0
+          expect(repository).to receive(:sum_by_amount).and_return 450.0
 
           expect {
             subject.build_sum_footer

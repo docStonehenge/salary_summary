@@ -12,7 +12,7 @@ module SalarySummary
       end
 
       def build_sum_footer
-        puts "Total ---- #{@repository.sum}"
+        puts "Total ---- #{@repository.sum_by_amount}"
       end
     end
   end
