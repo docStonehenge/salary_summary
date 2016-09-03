@@ -9,8 +9,6 @@ require 'salary_summary/client'
 
 require 'salary_summary/resources/salary'
 
-require 'salary_summary/calculators/annual_salary_calculator'
-
 require 'salary_summary/interpreters/information_interpreter'
 require 'salary_summary/interpreters/salary_report_interpreter'
 
