@@ -7,6 +7,8 @@ module SalarySummary
       let(:collection)     { double(:collection) }
       let(:entries)        { double(:entries) }
       let(:salary)         { double(:salary, period: Date.parse('01/2016'), amount: 150.0) }
+      let(:january)        { double(:salary, id: 1, period: Date.parse('January, 2016'), amount: 150.0) }
+      let(:february)       { double(:salary, id: 2, period: Date.parse('February, 2016'), amount: 200.0) }
 
       describe '.collection' do
         it 'creates a collection named salaries' do
@@ -29,7 +31,7 @@ module SalarySummary
       end
 
       describe '.find_all option_hash = {}' do
-        context 'when provided with a option hash' do
+        context 'when provided with a query modifier' do
           before do
             expect(described_class).to receive(:collection).and_return collection
             expect(collection).to receive(:find).with(period: Date.parse('January/2016')).and_return entries
@@ -45,12 +47,12 @@ module SalarySummary
                                          ).and_return salary
 
             expect(
-              described_class.find_all(period: Date.parse('January/2016'))
+              described_class.find_all(modifier: { period: Date.parse('January/2016') })
             ).to eql [salary]
           end
         end
 
-        context 'when not provided with a option hash' do
+        context 'when not provided with a query modifier' do
           before do
             expect(described_class).to receive(:collection).and_return collection
             expect(collection).to receive(:find).with({}).and_return entries
@@ -64,9 +66,6 @@ module SalarySummary
           end
 
           it 'returns all documents as Salary objects' do
-            january  = double(:salary, id: 1, period: Date.parse('January, 2016'), amount: 150.0)
-            february = double(:salary, id: 2, period: Date.parse('February, 2016'), amount: 200.0)
-
             expect(Resources::Salary).to receive(:new).once.with(
                                            id: 1, period: Date.parse('January, 2016'), amount: 150.0
                                          ).and_return january
@@ -76,6 +75,33 @@ module SalarySummary
                                          ).and_return february
 
             expect(described_class.find_all).to eql [january, february]
+          end
+        end
+
+        context 'when provided with a sorted_by option' do
+          before do
+            expect(described_class).to receive(:collection).and_return collection
+            expect(collection).to receive(:find).with({}).and_return entries
+            expect(entries).to receive(:sort).with(period: 1).and_return entries
+
+            expect(entries).to receive(:entries).and_return(
+                                 [
+                                   { '_id' => 2, 'period' => Time.parse('2016-01-01'), 'amount' => 150.0 },
+                                   { '_id' => 1, 'period' => Time.parse('2016-02-01'), 'amount' => 200.0 }
+                                 ]
+                               )
+          end
+
+          it 'returns all documents sorted as salaries' do
+            expect(Resources::Salary).to receive(:new).once.with(
+                                           id: 2, period: Date.parse('January, 2016'), amount: 150.0
+                                         ).and_return january
+
+            expect(Resources::Salary).to receive(:new).once.with(
+                                           id: 1, period: Date.parse('February, 2016'), amount: 200.0
+                                         ).and_return february
+
+            expect(described_class.find_all(sorted_by: { period: 1 })).to eql [january, february]
           end
         end
       end

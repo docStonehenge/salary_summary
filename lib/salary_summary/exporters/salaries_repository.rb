@@ -1,22 +1,25 @@
 module SalarySummary
   module Exporters
     class SalariesRepository
-      def self.collection
-        Client.instance[:salaries]
-      end
-
       def self.save(salary)
         collection.insert_one(period: salary.period, amount: salary.amount)
       end
 
-      def self.find_all(options = {})
-        transformed_entries_to_salaries(collection.find(options).entries)
+      def self.find_all(modifier: {}, sorted_by: {})
+        result = collection.find(modifier)
+        result = result.sort(sorted_by) unless sorted_by.empty?
+
+        transformed_entries_to_salaries(result.entries)
       end
 
       def self.sum_by_amount
         aggregation = salaries_sum_aggregation
 
         aggregation.empty? ? 0 : aggregation.first.dig('sum')
+      end
+
+      def self.collection
+        Client.instance[:salaries]
       end
 
       def self.transformed_entries_to_salaries(entries)
