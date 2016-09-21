@@ -23,7 +23,10 @@ module SalarySummary
         end
 
         it 'creates directory and saves file with all salaries and total amount' do
-          expect(repository).to receive(:find_all).and_return [salary_1, salary_2]
+          expect(repository).to receive(:find_all).with(
+                                  sorted_by: { period: 1 }
+                                ).and_return [salary_1, salary_2]
+
           expect(repository).to receive(:sum_by_amount).and_return 300.0
 
           subject.export('salary_report_test')

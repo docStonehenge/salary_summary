@@ -15,7 +15,9 @@ module SalarySummary
 
       describe '#build_entries' do
         it 'prints each entry on the table' do
-          expect(repository).to receive(:find_all).and_return [salary_1, salary_2]
+          expect(repository).to receive(:find_all).with(
+                                  sorted_by: { period: 1 }
+                                ).and_return [salary_1, salary_2]
 
           expect {
             subject.build_entries

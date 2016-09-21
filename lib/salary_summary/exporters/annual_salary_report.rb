@@ -7,7 +7,7 @@ module SalarySummary
 
       def export(report_file_name)
         File.open("dump/salary_summary/#{report_file_name}.csv", 'w') do |f|
-          @repository.find_all.each do |salary|
+          @repository.find_all(sorted_by: { period: 1 }).each do |salary|
             f.puts "#{salary.month.capitalize}/#{salary.year}, #{salary.amount}"
           end
 
