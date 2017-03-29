@@ -3,7 +3,7 @@
 require "salary_summary"
 include SalarySummary
 
-@repository    = Exporters::SalariesRepository
+@repository    = Repositories::SalariesRepository.new
 @table_builder = Builders::TableBuilder.new(@repository)
 @information   = ''
 
