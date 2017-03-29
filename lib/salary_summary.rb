@@ -4,6 +4,7 @@ require 'date'
 require 'csv'
 require 'fileutils'
 require 'mongo'
+require 'table_print'
 
 require 'salary_summary/client'
 
