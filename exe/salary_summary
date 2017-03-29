@@ -56,7 +56,6 @@ loop do
     @information = ''
   when COMMANDS.dig(:table)
     print "\n"
-    puts "---Period------Amount---"
     @table_builder.build_entries
     print "\n"
     @table_builder.build_sum_footer

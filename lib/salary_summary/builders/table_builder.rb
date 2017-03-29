@@ -1,14 +1,17 @@
 module SalarySummary
   module Builders
     class TableBuilder
+      include TablePrint
+
       def initialize(repository)
         @repository = repository
       end
 
       def build_entries
-        @repository.find_all(sorted_by: { period: 1 }).each do |salary|
-          puts "#{salary.month}, #{salary.year} ---- #{salary.amount}"
-        end
+        tp(
+          @repository.find_all(sorted_by: { period: 1 }),
+          :month, :year, :amount
+        )
       end
 
       def build_sum_footer

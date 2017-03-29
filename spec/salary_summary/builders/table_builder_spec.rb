@@ -6,6 +6,7 @@ module SalarySummary
       let(:repository) { double(:repository) }
       let(:salary_1)   { double(:salary, month: 'January', year: 2016, amount: 200.0) }
       let(:salary_2)   { double(:salary, month: 'February', year: 2016, amount: 250.0) }
+      let(:salaries)   { [salary_1, salary_2] }
 
       before do
         $stdout = File.open(File::NULL)
@@ -17,13 +18,13 @@ module SalarySummary
         it 'prints each entry on the table' do
           expect(repository).to receive(:find_all).with(
                                   sorted_by: { period: 1 }
-                                ).and_return [salary_1, salary_2]
+                                ).and_return salaries
 
-          expect {
-            subject.build_entries
-          }.to output(
-                 "January, 2016 ---- 200.0\nFebruary, 2016 ---- 250.0\n"
-               ).to_stdout
+          expect(subject).to receive(:tp).once.with(
+                               salaries, :month, :year, :amount
+                             )
+
+          subject.build_entries
         end
       end
 
