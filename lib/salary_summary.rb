@@ -16,7 +16,8 @@ require 'salary_summary/interpreters/salary_report_interpreter'
 require 'salary_summary/builders/table_builder'
 
 require 'salary_summary/exporters/annual_salary_report'
-require 'salary_summary/exporters/salaries_repository'
+
+require 'salary_summary/repositories/salaries_repository'
 
 module SalarySummary
   def self.included(_klass)

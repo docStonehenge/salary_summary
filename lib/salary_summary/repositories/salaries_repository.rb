@@ -1,5 +1,5 @@
 module SalarySummary
-  module Exporters
+  module Repositories
     class SalariesRepository
       def self.save(salary)
         collection.insert_one(period: salary.period, amount: salary.amount)

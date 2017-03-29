@@ -1,7 +1,7 @@
 require 'spec_helper'
 
 module SalarySummary
-  module Exporters
+  module Repositories
     describe SalariesRepository do
       let(:mongodb_client) { double(:client) }
       let(:collection)     { double(:collection) }
