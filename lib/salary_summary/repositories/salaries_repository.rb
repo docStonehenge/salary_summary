@@ -40,7 +40,7 @@ module SalarySummary
       def salaries_sum_aggregation
         @collection.aggregate(
           [
-            { :$group => { _id: 'Sum',  sum: { :$sum => '$amount' } } }
+            { :$group => { _id: 'Sum', sum: { :$sum => '$amount' } } }
           ]
         ).entries
       end

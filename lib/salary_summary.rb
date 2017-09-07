@@ -1,5 +1,6 @@
 require "salary_summary/version"
 
+require 'singleton'
 require 'date'
 require 'csv'
 require 'fileutils'
@@ -7,6 +8,7 @@ require 'mongo'
 require 'table_print'
 
 require 'salary_summary/client'
+require 'salary_summary/registry'
 
 require 'salary_summary/resources/salary'
 
