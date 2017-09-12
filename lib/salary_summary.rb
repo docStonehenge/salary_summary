@@ -19,6 +19,7 @@ require 'salary_summary/builders/table_builder'
 
 require 'salary_summary/exporters/annual_salary_report'
 
+require 'salary_summary/queries/entity_not_found_error'
 require 'salary_summary/repositories/salaries_repository'
 
 module SalarySummary

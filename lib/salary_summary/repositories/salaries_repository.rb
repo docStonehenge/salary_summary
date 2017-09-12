@@ -10,13 +10,21 @@ module SalarySummary
         @collection.insert_one(period: salary.period, amount: salary.amount)
       end
 
+      def find(id)
+        load_salary(id) do
+          query = get_entries({ _id: id }, {})
+
+          raise Queries::EntityNotFoundError.new(
+                  id: id, entity_name: @object_klass.name
+                ) if query.empty?
+
+          query.first
+        end
+      end
+
       def find_all(modifier: {}, sorted_by: {})
         get_entries(modifier, sorted_by).map do |entry|
-          if (registered_salary = Registry.get(entry.dig('_id')))
-            registered_salary
-          else
-            Registry.set(instantiate_salary_with(entry))
-          end
+          load_salary(entry.dig('_id')) { entry }
         end
       end
 
@@ -32,6 +40,16 @@ module SalarySummary
         query = query.sort(sorted_by) unless sorted_by.empty?
 
         query.entries
+      end
+
+      def load_salary(id)
+        if (registered_salary = Registry.get(id))
+          return registered_salary
+        end
+
+        entry = yield
+
+        Registry.set(instantiate_salary_with(entry))
       end
 
       def instantiate_salary_with(entry)

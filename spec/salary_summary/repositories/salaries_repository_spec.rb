@@ -34,6 +34,61 @@ module SalarySummary
         end
       end
 
+      describe '#find id' do
+        context 'when salary is not yet loaded on registry' do
+          before do
+            allow(Registry).to receive(:get).once.with('123').and_return nil
+          end
+
+          it 'queries for salary with id, sets into registry and returns salary object' do
+            expect(collection).to receive(:find).once.with(
+                                    _id: '123'
+                                  ).and_return entries
+
+            expect(entries).to receive(:entries).and_return(
+                                 [{ '_id' => '123', 'period' => Time.parse('2016-01-01'), 'amount' => 150.0 }]
+                               )
+
+            expect(Resources::Salary).to receive(:new).once.with(
+                                           id: '123', period: Date.parse('January, 2016'), amount: 150.0
+                                         ).and_return salary
+
+            expect(Registry).to receive(:set).once.with(salary).and_return salary
+
+            expect(subject.find('123')).to eql salary
+          end
+        end
+
+        context 'when salary is already loaded on registry' do
+          before do
+            allow(Registry).to receive(:get).once.with('123').and_return salary
+          end
+
+          it 'returns salary got from registry map' do
+            expect(collection).not_to receive(:find).with(any_args)
+            expect(Resources::Salary).not_to receive(:new).with(any_args)
+            expect(subject.find('123')).to eql salary
+          end
+        end
+
+        context 'when salary ID is not found' do
+          it 'raises EntityNotFoundError' do
+            allow(Registry).to receive(:get).once.with('123').and_return nil
+
+            expect(collection).to receive(:find).once.with(
+                                    _id: '123'
+                                  ).and_return entries
+
+            expect(entries).to receive(:entries).and_return([])
+
+            expect { subject.find('123') }.to raise_error(
+                                                Queries::EntityNotFoundError,
+                                                'Unable to find SalarySummary::Resources::Salary with ID #123'
+                                              )
+          end
+        end
+      end
+
       describe '#find_all modifier: {}, sorted_by: {}' do
         context 'when registry has no objects loaded' do
           context 'when provided with a query modifier' do
