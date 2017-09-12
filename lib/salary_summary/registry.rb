@@ -24,8 +24,8 @@ module SalarySummary
       @salaries = {}
     end
 
-    def set(instance)
-      salaries[instance.id] = instance
+    def set(object)
+      salaries[object.id] = object
     end
 
     def get(id)

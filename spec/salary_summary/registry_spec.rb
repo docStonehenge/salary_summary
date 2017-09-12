@@ -64,8 +64,8 @@ module SalarySummary
       end
     end
 
-    describe '#set instance' do
-      it 'adds instance argument into its salaries map' do
+    describe '#set object' do
+      it 'adds object into its salaries map' do
         allow(subject).to receive(:salaries).and_return({})
 
         salary = Resources::Salary.new(id: 123, amount: 1400.0, period: Date.parse('07/09/2017'))

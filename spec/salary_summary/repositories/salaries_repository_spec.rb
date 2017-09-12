@@ -4,6 +4,7 @@ module SalarySummary
   module Repositories
     describe SalariesRepository do
       let(:mongodb_client) { double(:client) }
+      let(:registry)       { double(:registry) }
       let(:collection)     { double(:collection) }
       let(:entries)        { double(:entries) }
       let(:salary)         { double(:salary, period: Date.parse('01/2016'), amount: 150.0) }
@@ -33,75 +34,190 @@ module SalarySummary
         end
       end
 
-      describe '#find_all option_hash = {}' do
-        context 'when provided with a query modifier' do
-          before do
-            expect(collection).to receive(:find).with(period: Date.parse('January/2016')).and_return entries
+      describe '#find_all modifier: {}, sorted_by: {}' do
+        context 'when registry has no objects loaded' do
+          context 'when provided with a query modifier' do
+            before do
+              expect(collection).to receive(:find).with(period: Date.parse('January/2016')).and_return entries
 
-            expect(entries).to receive(:entries).and_return(
-                                 [{ '_id' => 1, 'period' => Time.parse('2016-01-01'), 'amount' => 150.0 }]
-                               )
+              expect(entries).to receive(:entries).and_return(
+                                   [{ '_id' => 1, 'period' => Time.parse('2016-01-01'), 'amount' => 150.0 }]
+                                 )
+
+              expect(Registry).to receive(:get).once.with(1).and_return nil
+            end
+
+            it 'returns a set of Salary objects found on database' do
+              expect(Resources::Salary).to receive(:new).once.with(
+                                             id: 1, period: Date.parse('January, 2016'), amount: 150.0
+                                           ).and_return salary
+
+              expect(Registry).to receive(:set).once.with(salary).and_return salary
+
+              expect(
+                subject.find_all(modifier: { period: Date.parse('January/2016') })
+              ).to eql [salary]
+            end
           end
 
-          it 'returns a set of Salary objects found on database' do
-            expect(Resources::Salary).to receive(:new).once.with(
-                                           id: 1, period: Date.parse('January, 2016'), amount: 150.0
-                                         ).and_return salary
+          context 'when not provided with a query modifier' do
+            before do
+              expect(collection).to receive(:find).with({}).and_return entries
 
-            expect(
-              subject.find_all(modifier: { period: Date.parse('January/2016') })
-            ).to eql [salary]
+              expect(entries).to receive(:entries).and_return(
+                                   [
+                                     { '_id' => 1, 'period' => Time.parse('2016-01-01'), 'amount' => 150.0 },
+                                     { '_id' => 2, 'period' => Time.parse('2016-02-01'), 'amount' => 200.0 }
+                                   ]
+                                 )
+
+              expect(Registry).to receive(:get).once.with(1).and_return nil
+              expect(Registry).to receive(:get).once.with(2).and_return nil
+            end
+
+            it 'returns all documents as Salary objects' do
+              expect(Resources::Salary).to receive(:new).once.with(
+                                             id: 1, period: Date.parse('January, 2016'), amount: 150.0
+                                           ).and_return january
+
+              expect(Resources::Salary).to receive(:new).once.with(
+                                             id: 2, period: Date.parse('February, 2016'), amount: 200.0
+                                           ).and_return february
+
+              expect(Registry).to receive(:set).once.with(january).and_return january
+              expect(Registry).to receive(:set).once.with(february).and_return february
+
+              expect(subject.find_all).to eql [january, february]
+            end
+          end
+
+          context 'when provided with a sorted_by option' do
+            before do
+              expect(collection).to receive(:find).with({}).and_return entries
+              expect(entries).to receive(:sort).with(period: 1).and_return entries
+
+              expect(entries).to receive(:entries).and_return(
+                                   [
+                                     { '_id' => 2, 'period' => Time.parse('2016-01-01'), 'amount' => 150.0 },
+                                     { '_id' => 1, 'period' => Time.parse('2016-02-01'), 'amount' => 200.0 }
+                                   ]
+                                 )
+            end
+
+            it 'returns all documents sorted as salaries' do
+              expect(Resources::Salary).to receive(:new).once.with(
+                                             id: 2, period: Date.parse('January, 2016'), amount: 150.0
+                                           ).and_return january
+
+              expect(Resources::Salary).to receive(:new).once.with(
+                                             id: 1, period: Date.parse('February, 2016'), amount: 200.0
+                                           ).and_return february
+
+              expect(Registry).to receive(:set).once.with(january).and_return january
+              expect(Registry).to receive(:set).once.with(february).and_return february
+
+              expect(subject.find_all(sorted_by: { period: 1 })).to eql [january, february]
+            end
           end
         end
 
-        context 'when not provided with a query modifier' do
+        context 'when registry contains salaries instances loaded' do
           before do
-            expect(collection).to receive(:find).with({}).and_return entries
+            @loaded_salary = Resources::Salary.new(
+              id: 124, amount: 4000.0, period: Date.parse('07/01/2016')
+            )
 
-            expect(entries).to receive(:entries).and_return(
-                                 [
-                                   { '_id' => 1, 'period' => Time.parse('2016-01-01'), 'amount' => 150.0 },
-                                   { '_id' => 2, 'period' => Time.parse('2016-02-01'), 'amount' => 200.0 }
-                                 ]
-                               )
+            expect(Registry).to receive(
+                                  :get
+                                ).once.with(124).and_return @loaded_salary
+
+            expect(Registry).to receive(
+                                  :get
+                                ).once.with(125).and_return nil
           end
 
-          it 'returns all documents as Salary objects' do
-            expect(Resources::Salary).to receive(:new).once.with(
-                                           id: 1, period: Date.parse('January, 2016'), amount: 150.0
-                                         ).and_return january
+          context 'when provided with a query modifier' do
+            before do
+              expect(collection).to receive(:find).with(period: Date.parse('January/2016')).and_return entries
 
-            expect(Resources::Salary).to receive(:new).once.with(
-                                           id: 2, period: Date.parse('February, 2016'), amount: 200.0
-                                         ).and_return february
+              expect(entries).to receive(:entries).and_return(
+                                   [
+                                     { '_id' => 124, 'period' => Time.parse('2016-01-01'), 'amount' => 150.0 },
+                                     { '_id' => 125, 'period' => Time.parse('2016-02-01'), 'amount' => 150.0 }
+                                   ]
+                                 )
+            end
 
-            expect(subject.find_all).to eql [january, february]
+            it 'returns a set of Salary objects already loaded' do
+              expect(Resources::Salary).not_to receive(:new).with(
+                                             id: 124, period: Date.parse('January, 2016'), amount: 150.0
+                                           )
+
+              expect(Resources::Salary).to receive(:new).once.with(
+                                             id: 125, period: Date.parse('February, 2016'), amount: 150.0
+                                           ).and_return salary
+
+              expect(Registry).to receive(:set).once.with(salary).and_return salary
+
+              expect(
+                subject.find_all(modifier: { period: Date.parse('January/2016') })
+              ).to eql [@loaded_salary, salary]
+            end
           end
-        end
 
-        context 'when provided with a sorted_by option' do
-          before do
-            expect(collection).to receive(:find).with({}).and_return entries
-            expect(entries).to receive(:sort).with(period: 1).and_return entries
+          context 'when not provided with a query modifier' do
+            before do
+              expect(collection).to receive(:find).with({}).and_return entries
 
-            expect(entries).to receive(:entries).and_return(
-                                 [
-                                   { '_id' => 2, 'period' => Time.parse('2016-01-01'), 'amount' => 150.0 },
-                                   { '_id' => 1, 'period' => Time.parse('2016-02-01'), 'amount' => 200.0 }
-                                 ]
-                               )
+              expect(entries).to receive(:entries).and_return(
+                                   [
+                                     { '_id' => 124, 'period' => Time.parse('2016-01-01'), 'amount' => 150.0 },
+                                     { '_id' => 125, 'period' => Time.parse('2016-02-01'), 'amount' => 200.0 }
+                                   ]
+                                 )
+            end
+
+            it 'returns all documents as Salary objects' do
+              expect(Resources::Salary).not_to receive(:new).with(
+                                             id: 124, period: Date.parse('January, 2016'), amount: 150.0
+                                           )
+
+              expect(Resources::Salary).to receive(:new).once.with(
+                                             id: 125, period: Date.parse('February, 2016'), amount: 200.0
+                                           ).and_return february
+
+              expect(Registry).to receive(:set).once.with(february).and_return february
+
+              expect(subject.find_all).to eql [@loaded_salary, february]
+            end
           end
 
-          it 'returns all documents sorted as salaries' do
-            expect(Resources::Salary).to receive(:new).once.with(
-                                           id: 2, period: Date.parse('January, 2016'), amount: 150.0
-                                         ).and_return january
+          context 'when provided with a sorted_by option' do
+            before do
+              expect(collection).to receive(:find).with({}).and_return entries
+              expect(entries).to receive(:sort).with(period: 1).and_return entries
 
-            expect(Resources::Salary).to receive(:new).once.with(
-                                           id: 1, period: Date.parse('February, 2016'), amount: 200.0
-                                         ).and_return february
+              expect(entries).to receive(:entries).and_return(
+                                   [
+                                     { '_id' => 124, 'period' => Time.parse('2016-01-01'), 'amount' => 150.0 },
+                                     { '_id' => 125, 'period' => Time.parse('2016-02-01'), 'amount' => 200.0 }
+                                   ]
+                                 )
+            end
 
-            expect(subject.find_all(sorted_by: { period: 1 })).to eql [january, february]
+            it 'returns all documents sorted as salaries' do
+              expect(Resources::Salary).not_to receive(:new).with(
+                                             id: 124, period: Date.parse('January, 2016'), amount: 150.0
+                                           )
+
+              expect(Resources::Salary).to receive(:new).once.with(
+                                             id: 125, period: Date.parse('February, 2016'), amount: 200.0
+                                           ).and_return february
+
+              expect(Registry).to receive(:set).once.with(february).and_return february
+
+              expect(subject.find_all(sorted_by: { period: 1 })).to eql [@loaded_salary, february]
+            end
           end
         end
       end
