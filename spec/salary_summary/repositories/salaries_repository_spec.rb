@@ -20,7 +20,7 @@ module SalarySummary
       describe 'attributes' do
         specify do
           expect(subject.instance_variable_get(:@collection)).to eql collection
-          expect(subject.instance_variable_get(:@object_klass)).to eql Resources::Salary
+          expect(subject.instance_variable_get(:@object_klass)).to eql Entities::Salary
         end
       end
 
@@ -49,7 +49,7 @@ module SalarySummary
                                  [{ '_id' => '123', 'period' => Time.parse('2016-01-01'), 'amount' => 150.0 }]
                                )
 
-            expect(Resources::Salary).to receive(:new).once.with(
+            expect(Entities::Salary).to receive(:new).once.with(
                                            id: '123', period: Date.parse('January, 2016'), amount: 150.0
                                          ).and_return salary
 
@@ -66,7 +66,7 @@ module SalarySummary
 
           it 'returns salary got from registry map' do
             expect(collection).not_to receive(:find).with(any_args)
-            expect(Resources::Salary).not_to receive(:new).with(any_args)
+            expect(Entities::Salary).not_to receive(:new).with(any_args)
             expect(subject.find('123')).to eql salary
           end
         end
@@ -83,7 +83,7 @@ module SalarySummary
 
             expect { subject.find('123') }.to raise_error(
                                                 Queries::EntityNotFoundError,
-                                                'Unable to find SalarySummary::Resources::Salary with ID #123'
+                                                'Unable to find SalarySummary::Entities::Salary with ID #123'
                                               )
           end
         end
@@ -103,7 +103,7 @@ module SalarySummary
             end
 
             it 'returns a set of Salary objects found on database' do
-              expect(Resources::Salary).to receive(:new).once.with(
+              expect(Entities::Salary).to receive(:new).once.with(
                                              id: 1, period: Date.parse('January, 2016'), amount: 150.0
                                            ).and_return salary
 
@@ -131,11 +131,11 @@ module SalarySummary
             end
 
             it 'returns all documents as Salary objects' do
-              expect(Resources::Salary).to receive(:new).once.with(
+              expect(Entities::Salary).to receive(:new).once.with(
                                              id: 1, period: Date.parse('January, 2016'), amount: 150.0
                                            ).and_return january
 
-              expect(Resources::Salary).to receive(:new).once.with(
+              expect(Entities::Salary).to receive(:new).once.with(
                                              id: 2, period: Date.parse('February, 2016'), amount: 200.0
                                            ).and_return february
 
@@ -160,11 +160,11 @@ module SalarySummary
             end
 
             it 'returns all documents sorted as salaries' do
-              expect(Resources::Salary).to receive(:new).once.with(
+              expect(Entities::Salary).to receive(:new).once.with(
                                              id: 2, period: Date.parse('January, 2016'), amount: 150.0
                                            ).and_return january
 
-              expect(Resources::Salary).to receive(:new).once.with(
+              expect(Entities::Salary).to receive(:new).once.with(
                                              id: 1, period: Date.parse('February, 2016'), amount: 200.0
                                            ).and_return february
 
@@ -178,7 +178,7 @@ module SalarySummary
 
         context 'when registry contains salaries instances loaded' do
           before do
-            @loaded_salary = Resources::Salary.new(
+            @loaded_salary = Entities::Salary.new(
               id: 124, amount: 4000.0, period: Date.parse('07/01/2016')
             )
 
@@ -204,11 +204,11 @@ module SalarySummary
             end
 
             it 'returns a set of Salary objects already loaded' do
-              expect(Resources::Salary).not_to receive(:new).with(
+              expect(Entities::Salary).not_to receive(:new).with(
                                              id: 124, period: Date.parse('January, 2016'), amount: 150.0
                                            )
 
-              expect(Resources::Salary).to receive(:new).once.with(
+              expect(Entities::Salary).to receive(:new).once.with(
                                              id: 125, period: Date.parse('February, 2016'), amount: 150.0
                                            ).and_return salary
 
@@ -233,11 +233,11 @@ module SalarySummary
             end
 
             it 'returns all documents as Salary objects' do
-              expect(Resources::Salary).not_to receive(:new).with(
+              expect(Entities::Salary).not_to receive(:new).with(
                                              id: 124, period: Date.parse('January, 2016'), amount: 150.0
                                            )
 
-              expect(Resources::Salary).to receive(:new).once.with(
+              expect(Entities::Salary).to receive(:new).once.with(
                                              id: 125, period: Date.parse('February, 2016'), amount: 200.0
                                            ).and_return february
 
@@ -261,11 +261,11 @@ module SalarySummary
             end
 
             it 'returns all documents sorted as salaries' do
-              expect(Resources::Salary).not_to receive(:new).with(
+              expect(Entities::Salary).not_to receive(:new).with(
                                              id: 124, period: Date.parse('January, 2016'), amount: 150.0
                                            )
 
-              expect(Resources::Salary).to receive(:new).once.with(
+              expect(Entities::Salary).to receive(:new).once.with(
                                              id: 125, period: Date.parse('February, 2016'), amount: 200.0
                                            ).and_return february
 

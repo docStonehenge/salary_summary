@@ -1,7 +1,7 @@
 require 'spec_helper'
 
 module SalarySummary
-  module Resources
+  module Entities
     describe ComparisonError do
       it '#message' do
         expect(

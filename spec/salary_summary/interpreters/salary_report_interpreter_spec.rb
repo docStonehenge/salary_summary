@@ -23,11 +23,11 @@ module SalarySummary
         end
 
         it 'reads csv file based on file name and passes information to calculator' do
-          expect(Resources::Salary).to receive(:new).once.
+          expect(Entities::Salary).to receive(:new).once.
                                         with(amount: 200.0, period: 'January').
                                         and_return january
 
-          expect(Resources::Salary).to receive(:new).once.
+          expect(Entities::Salary).to receive(:new).once.
                                         with(amount: 200.0, period: 'February').
                                         and_return february
 

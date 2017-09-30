@@ -2,7 +2,7 @@ module SalarySummary
   module Interpreters
     class InformationInterpreter
       def parse(information)
-        Resources::Salary.new(
+        Entities::Salary.new(
           amount: normalize_amount(separated_entries_for(information)[1]),
           period: Date.parse(separated_entries_for(information)[0])
         )

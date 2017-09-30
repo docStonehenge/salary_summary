@@ -1,5 +1,5 @@
 module SalarySummary
-  module Resources
+  module Entities
     class Salary
       include Comparable
 

@@ -9,7 +9,7 @@ module SalarySummary
         CSV.foreach("dump/salary_summary/#{file_name}.csv") do |entry|
           unless total_salary_entry?(entry)
             @calculator.enqueue(
-              Resources::Salary.new(amount: entry[1].to_f, period: entry[0])
+              Entities::Salary.new(amount: entry[1].to_f, period: entry[0])
             )
           end
         end

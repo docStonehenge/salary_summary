@@ -10,8 +10,8 @@ require 'table_print'
 require 'salary_summary/client'
 require 'salary_summary/registry'
 
-require 'salary_summary/resources/comparison_error'
-require 'salary_summary/resources/salary'
+require 'salary_summary/entities/comparison_error'
+require 'salary_summary/entities/salary'
 
 require 'salary_summary/interpreters/information_interpreter'
 require 'salary_summary/interpreters/salary_report_interpreter'

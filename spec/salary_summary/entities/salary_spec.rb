@@ -1,7 +1,7 @@
 require 'spec_helper'
 
 module SalarySummary
-  module Resources
+  module Entities
     describe Salary do
       context 'can be initialized with any atributes' do
         it 'initializes only with amount' do

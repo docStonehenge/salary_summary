@@ -3,7 +3,7 @@ module SalarySummary
     class SalariesRepository
       def initialize(connection_client = Client.instance)
         @collection   = connection_client[:salaries]
-        @object_klass = Resources::Salary
+        @object_klass = Entities::Salary
       end
 
       def save(salary)

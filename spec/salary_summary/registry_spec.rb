@@ -8,7 +8,7 @@ module SalarySummary
 
     describe '.salaries_list' do
       it 'returns singleton instance salaries map as an array of salaries' do
-        salary = Resources::Salary.new(id: 123, amount: 1400.0, period: Date.parse('07/09/2017'))
+        salary = Entities::Salary.new(id: 123, amount: 1400.0, period: Date.parse('07/09/2017'))
 
         allow(subject).to receive(:salaries).and_return(123 => salary)
 
@@ -32,7 +32,7 @@ module SalarySummary
       it 'uses singleton instance and sets argument into its map' do
         allow(subject).to receive(:salaries).and_return({})
 
-        salary = Resources::Salary.new(id: 123, amount: 1400.0, period: Date.parse('07/09/2017'))
+        salary = Entities::Salary.new(id: 123, amount: 1400.0, period: Date.parse('07/09/2017'))
 
         described_class.set(salary)
 
@@ -53,7 +53,7 @@ module SalarySummary
 
       context 'when map contains id as key' do
         it 'returns object mapped by id key' do
-          salary = Resources::Salary.new(id: 123, amount: 1400.0, period: Date.parse('07/09/2017'))
+          salary = Entities::Salary.new(id: 123, amount: 1400.0, period: Date.parse('07/09/2017'))
 
           allow(subject).to receive(:salaries).once.and_return(123 => salary)
 
@@ -68,7 +68,7 @@ module SalarySummary
       it 'adds object into its salaries map' do
         allow(subject).to receive(:salaries).and_return({})
 
-        salary = Resources::Salary.new(id: 123, amount: 1400.0, period: Date.parse('07/09/2017'))
+        salary = Entities::Salary.new(id: 123, amount: 1400.0, period: Date.parse('07/09/2017'))
 
         subject.set(salary)
 
@@ -89,7 +89,7 @@ module SalarySummary
 
       context 'when map contains id as key' do
         it 'returns object mapped by id key' do
-          salary = Resources::Salary.new(id: 123, amount: 1400.0, period: Date.parse('07/09/2017'))
+          salary = Entities::Salary.new(id: 123, amount: 1400.0, period: Date.parse('07/09/2017'))
           allow(subject).to receive(:salaries).once.and_return(123 => salary)
 
           result = subject.get(123)
