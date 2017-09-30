@@ -17,7 +17,7 @@ module SalarySummary
 
       subject { described_class.new(repository) }
 
-      describe '#export, report_file_name' do
+      describe '#export, report_file_name', integration: true do
         after do
           FileUtils.rm("dump/salary_summary/salary_report_test.csv")
         end

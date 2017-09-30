@@ -16,9 +16,22 @@ module SalarySummary
     end
 
     describe '.set_database_logging' do
-      it 'sets the default database logging to a dump file' do
+      before do
         allow(Mongo::Logger).to receive(:logger).and_return logger
+      end
+
+      it 'sets the default database logging to a log file', integration: true do
         expect(Mongo::Logger).to receive(:logger=).with(an_instance_of(::Logger))
+        expect(logger).to receive(:level=).with(::Logger::INFO)
+
+        described_class.set_database_logging
+      end
+
+      it 'sets the default database logging to a log file' do
+        log_file = double
+
+        allow(::Logger).to receive(:new).once.with('log/mongodb.log').and_return log_file
+        expect(Mongo::Logger).to receive(:logger=).with(log_file)
         expect(logger).to receive(:level=).with(::Logger::INFO)
 
         described_class.set_database_logging

@@ -7,7 +7,7 @@ module SalarySummary
     end
 
     def self.set_database_logging
-      Mongo::Logger.logger = ::Logger.new('dump/mongodb.log')
+      Mongo::Logger.logger = ::Logger.new('log/mongodb.log')
       Mongo::Logger.logger.level = ::Logger::INFO
     end
   end

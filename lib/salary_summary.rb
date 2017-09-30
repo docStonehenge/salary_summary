@@ -14,7 +14,6 @@ require 'salary_summary/entities/comparison_error'
 require 'salary_summary/entities/salary'
 
 require 'salary_summary/interpreters/information_interpreter'
-require 'salary_summary/interpreters/salary_report_interpreter'
 
 require 'salary_summary/builders/table_builder'
 
