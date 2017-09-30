@@ -3,13 +3,23 @@ module SalarySummary
     class Salary
       include Comparable
 
-      attr_reader :id, :amount, :period, :comparable_key
+      @fields_list = []
 
-      def initialize(id: nil, amount:, period:)
-        @id             = id
-        @amount         = amount
-        @period         = period
-        @comparable_key = :id
+      class << self
+        attr_reader :fields_list
+
+        private
+
+        def fields(*names)
+          names.each { |name| @fields_list << name }
+          attr_accessor(*names)
+        end
+      end
+
+      fields :id, :amount, :period
+
+      def initialize(attributes)
+        @id, @amount, @period = attributes.values_at(:id, :amount, :period)
       end
 
       def _id
@@ -24,12 +34,9 @@ module SalarySummary
         period.strftime('%B')
       end
 
-      def comparable_key=(key)
-        @comparable_key = key.to_sym if respond_to?(key.to_s)
-      end
-
       def <=>(other)
-        public_send(@comparable_key) <=> other.public_send(@comparable_key)
+        raise ComparisonError if id.nil? or other.id.nil?
+        id <=> other.id
       end
     end
   end
