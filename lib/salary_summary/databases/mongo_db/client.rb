@@ -1,3 +1,5 @@
+require 'mongo'
+
 module SalarySummary
   module Databases
     module MongoDB
@@ -10,7 +12,7 @@ module SalarySummary
 
         def self.set_database_logging
           Mongo::Logger.logger = ::Logger.new('log/mongodb.log')
-          Mongo::Logger.logger.level = ::Logger::INFO
+          Mongo::Logger.logger.level = ::Logger::DEBUG
         end
       end
     end

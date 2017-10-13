@@ -24,7 +24,7 @@ module SalarySummary
 
           it 'sets the default database logging to a log file', integration: true do
             expect(Mongo::Logger).to receive(:logger=).with(an_instance_of(::Logger))
-            expect(logger).to receive(:level=).with(::Logger::INFO)
+            expect(logger).to receive(:level=).with(::Logger::DEBUG)
 
             described_class.set_database_logging
           end
@@ -34,7 +34,7 @@ module SalarySummary
 
             allow(::Logger).to receive(:new).once.with('log/mongodb.log').and_return log_file
             expect(Mongo::Logger).to receive(:logger=).with(log_file)
-            expect(logger).to receive(:level=).with(::Logger::INFO)
+            expect(logger).to receive(:level=).with(::Logger::DEBUG)
 
             described_class.set_database_logging
           end
