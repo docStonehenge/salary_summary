@@ -33,4 +33,5 @@ Gem::Specification.new do |spec|
 
   spec.add_runtime_dependency 'table_print', '~> 1.5'
   spec.add_runtime_dependency 'mongo', '~> 2.2', '>= 2.2.5'
+  spec.add_runtime_dependency 'dotenv', '~> 2.2', '>= 2.2.1'
 end

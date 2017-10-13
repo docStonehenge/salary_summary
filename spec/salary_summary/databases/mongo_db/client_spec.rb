@@ -33,12 +33,12 @@ module SalarySummary
         describe '#initialize' do
           it 'loads DB properties from file and sets DB connection' do
             expect(::Mongo::Client).to receive(:new).with(
-                                         'mongodb://127.0.0.1:27017/salary_summary'
-                                       ).and_return mongodb_client
+                                        'mongodb://127.0.0.1:27017/salary_summary'
+                                      ).and_return mongodb_client
 
             subject = described_class.instance
 
-            expect(subject.instance_variable_get(:@db_connection)).to eql mongodb_client
+            expect(subject.connection).to eql mongodb_client
           end
 
           it 'raises ConnectionPropertiesError on loading problems' do
@@ -52,6 +52,20 @@ module SalarySummary
                    Databases::ConnectionPropertiesError,
                    'Error while loading db/properties.yml file. Make sure that all key-value pairs are correctly set or file exists.'
                  )
+          end
+        end
+
+        describe '#database_collection name' do
+          let(:collection) { double(:collection) }
+
+          it 'returns collection based on name, fetched as key from db connection' do
+            subject = described_class.instance
+
+            expect(subject.connection).to receive(:[]).once.with(:foo).and_return collection
+
+            expect(
+              subject.database_collection(:foo)
+            ).to eql collection
           end
         end
       end

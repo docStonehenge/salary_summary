@@ -25,5 +25,8 @@ require 'salary_summary/repositories/salaries_repository'
 module SalarySummary
   def self.included(_klass)
     Databases::MongoDB::Client.set_database_logging
+
+    require 'dotenv'
+    Dotenv.load
   end
 end

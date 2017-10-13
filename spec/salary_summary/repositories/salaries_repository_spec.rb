@@ -3,7 +3,7 @@ require 'spec_helper'
 module SalarySummary
   module Repositories
     describe SalariesRepository do
-      let(:mongodb_client) { double(:client) }
+      let(:client)         { double(:client) }
       let(:registry)       { double(:registry) }
       let(:collection)     { double(:collection) }
       let(:entries)        { double(:entries) }
@@ -11,10 +11,12 @@ module SalarySummary
       let(:january)        { double(:salary, id: 1, period: Date.parse('January, 2016'), amount: 150.0) }
       let(:february)       { double(:salary, id: 2, period: Date.parse('February, 2016'), amount: 200.0) }
 
-      subject { described_class.new(mongodb_client) }
+      subject { described_class.new(client: client) }
 
       before do
-        expect(mongodb_client).to receive(:[]).with(:salaries).and_return collection
+        expect(client).to receive(
+                            :database_collection
+                          ).with(:salaries).and_return collection
       end
 
       describe 'attributes' do

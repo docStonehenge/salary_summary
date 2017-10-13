@@ -6,13 +6,19 @@ module SalarySummary
       class Client
         include Singleton
 
+        attr_reader :connection
+
         def self.set_database_logging
           Mongo::Logger.logger = ::Logger.new('log/mongodb.log')
           Mongo::Logger.logger.level = ::Logger::DEBUG
         end
 
         def initialize
-          @db_connection = ::Mongo::Client.new(parse_database_url)
+          @connection = ::Mongo::Client.new(parse_database_url)
+        end
+
+        def database_collection(name)
+          connection[name.to_sym]
         end
 
         private
@@ -20,11 +26,11 @@ module SalarySummary
         def parse_database_url
           properties = load_database_properties
 
-          protocol = properties.dig('protocol')
-          host     = "#{properties.dig('host')}:#{properties.dig('port')}"
-          database = properties.dig('database')
+          protocol, host, port, database = properties.values_at(
+                                  'protocol', 'host', 'port', 'database'
+                                )
 
-          "#{protocol}://#{host}/#{database}"
+          "#{protocol}://#{host}:#{port}/#{database}"
         end
 
         def load_database_properties

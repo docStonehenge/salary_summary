@@ -10,3 +10,4 @@
 /log/*.log
 /dump/
 /db/properties.yml
+.env
