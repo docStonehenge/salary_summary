@@ -8,7 +8,9 @@ describe SalarySummary do
   it 'calls MongoDB client logging mechanism' do
     subject = Class.new
 
-    expect(SalarySummary::Client).to receive(:set_database_logging).once
+    expect(
+      SalarySummary::Databases::MongoDB::Client
+    ).to receive(:set_database_logging).once
 
     subject.include(SalarySummary)
   end

@@ -7,7 +7,7 @@ require 'fileutils'
 require 'mongo'
 require 'table_print'
 
-require 'salary_summary/client'
+require 'salary_summary/databases/mongo_db/client'
 require 'salary_summary/registry'
 
 require 'salary_summary/entities/comparison_error'
@@ -24,6 +24,6 @@ require 'salary_summary/repositories/salaries_repository'
 
 module SalarySummary
   def self.included(_klass)
-    Client.set_database_logging
+    Databases::MongoDB::Client.set_database_logging
   end
 end

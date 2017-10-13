@@ -1,7 +1,7 @@
 module SalarySummary
   module Repositories
     class SalariesRepository
-      def initialize(connection_client = Client.instance)
+      def initialize(connection_client = Databases::MongoDB::Client.instance)
         @collection   = connection_client[:salaries]
         @object_klass = Entities::Salary
       end
