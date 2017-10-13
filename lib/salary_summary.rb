@@ -6,6 +6,7 @@ require 'csv'
 require 'fileutils'
 require 'table_print'
 
+require 'salary_summary/databases/connection_properties_error'
 require 'salary_summary/databases/mongo_db/client'
 require 'salary_summary/registry'
 
