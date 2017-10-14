@@ -6,6 +6,8 @@ require 'csv'
 require 'fileutils'
 require 'table_print'
 
+require 'salary_summary/databases/uri_parser'
+require 'salary_summary/databases/connection_error'
 require 'salary_summary/databases/connection_properties_error'
 require 'salary_summary/databases/mongo_db/client'
 require 'salary_summary/registry'
@@ -23,10 +25,10 @@ require 'salary_summary/queries/entity_not_found_error'
 require 'salary_summary/repositories/salaries_repository'
 
 module SalarySummary
+  require 'dotenv'
+  Dotenv.load
+
   def self.included(_klass)
     Databases::MongoDB::Client.set_database_logging
-
-    require 'dotenv'
-    Dotenv.load
   end
 end
