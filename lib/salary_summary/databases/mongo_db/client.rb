@@ -12,8 +12,11 @@ module SalarySummary
         end
 
         def initialize
-          @connection   = ::Mongo::Client.new(Databases::URIParser.perform)
           @id_generator = ::Mongo::Operation::ObjectIdGenerator.new
+
+          @connection   = ::Mongo::Client.new(
+            Databases::URIParser.parse_based_on_file
+          )
         rescue ::Mongo::Error::InvalidURI => e
           raise Databases::ConnectionError, e
         end

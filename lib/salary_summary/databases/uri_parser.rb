@@ -4,7 +4,7 @@ module SalarySummary
   module Databases
     class URIParser
       class << self
-        def perform
+        def parse_based_on_file
           protocol, host, port, database = load_database_properties.values_at(
                                   'protocol', 'host', 'port', 'database'
                                 )

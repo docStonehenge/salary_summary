@@ -27,7 +27,9 @@ module SalarySummary
           let(:id_gen) { double(:id_gen) }
 
           before do
-            expect(Databases::URIParser).to receive(:perform).once.and_return 'uri'
+            expect(
+              Databases::URIParser
+            ).to receive(:parse_based_on_file).once.and_return 'uri'
           end
 
           it 'sets DB connection and ID generator' do

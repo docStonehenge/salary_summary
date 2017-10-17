@@ -3,10 +3,10 @@ require 'spec_helper'
 module SalarySummary
   module Databases
     describe URIParser do
-      describe '.perform' do
+      describe '.parse_based_on_file' do
         it 'returns correct URI after reading properties from yml file' do
           expect(
-            described_class.perform
+            described_class.parse_based_on_file
           ).to eql 'mongodb://127.0.0.1:27017/salary_summary'
         end
 
@@ -16,7 +16,7 @@ module SalarySummary
                           ).and_raise Errno::ENOENT
 
           expect {
-            described_class.perform
+            described_class.parse_based_on_file
           }.to raise_error(
                  Databases::ConnectionPropertiesError,
                  'Error while loading db/properties.yml file. Make sure that all key-value pairs are correctly set or file exists.'
@@ -29,7 +29,7 @@ module SalarySummary
                           ).and_return ""
 
           expect {
-            described_class.perform
+            described_class.parse_based_on_file
           }.to raise_error(
                  Databases::ConnectionPropertiesError,
                  'Error while loading db/properties.yml file. Make sure that all key-value pairs are correctly set or file exists.'
