@@ -10,6 +10,9 @@ require 'salary_summary/databases/uri_parser'
 require 'salary_summary/databases/connection_error'
 require 'salary_summary/databases/connection_properties_error'
 require 'salary_summary/databases/mongo_db/client'
+
+require 'salary_summary/persistency/unit_of_work'
+
 require 'salary_summary/registry'
 
 require 'salary_summary/entities/comparison_error'
