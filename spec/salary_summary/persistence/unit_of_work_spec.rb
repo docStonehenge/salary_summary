@@ -1,25 +1,60 @@
 require 'spec_helper'
 
 module SalarySummary
-  module Persistency
+  module Persistence
     describe UnitOfWork do
+      describe '.new_current uow' do
+        it 'registers a new UnitOfWork instance as current on running thread' do
+          described_class.new_current
+
+          expect(
+            Thread.current.thread_variable_get(:current_uow)
+          ).to be_an_instance_of(described_class)
+        end
+      end
+
+      describe '.current= uow' do
+        it 'registers a UnitOfWork instance as current on running thread' do
+          described_class.current = subject
+
+          expect(
+            Thread.current.thread_variable_get(:current_uow)
+          ).to equal subject
+        end
+      end
+
+      describe '.current' do
+        it 'returns current UnitOfWork instance on running thread' do
+          described_class.current = subject
+          expect(described_class.current).to equal subject
+        end
+      end
+
+      subject { described_class.new(EntityRegistry.new) }
+
+      let(:changed_entities) { subject.instance_variable_get(:@changed_entities) }
+      let(:clean_entities) { subject.instance_variable_get(:@clean_entities) }
+
       describe '#register_clean entity' do
-        let(:entity) { double(:entity, id: 123) }
-        let(:clean_entities) { subject.instance_variable_get(:@clean_entities) }
+        let(:entity) { Entities::Salary.new(id: BSON::ObjectId.new, amount: 1400.0, period: Date.parse('07/09/2017')) }
 
         context "when clean_entities list doesn't contain entity yet" do
-          it 'adds entity to clean_entities list' do
+          it 'adds entity to clean_entities map' do
             subject.register_clean(entity)
-            expect(clean_entities.first).to equal entity
+            expect(clean_entities.get(entity.class.name, entity.id)).to equal entity
           end
         end
 
         context 'when clean_entities already contains entity' do
-          it "doesn't add same object twice" do
-            subject.register_clean(entity)
-            subject.register_clean(entity)
+          it "doesn't add same database registry twice" do
+            another_entity = Entities::Salary.new(id: entity.id)
 
-            expect(clean_entities).to contain_exactly(entity)
+            subject.register_clean(entity)
+            subject.register_clean(another_entity)
+
+            expect(
+              clean_entities.get(Entities::Salary, another_entity.id)
+            ).not_to equal another_entity
           end
         end
 
@@ -29,29 +64,6 @@ module SalarySummary
           it "doesn't add to clean_entities list" do
             subject.register_clean(not_persisted_entity)
             expect(clean_entities).not_to include not_persisted_entity
-          end
-        end
-
-        context 'when entity is present in another list' do
-          it "doesn't add to clean_entities list when present on new_entities" do
-            subject.register_new(entity)
-            subject.register_clean(entity)
-
-            expect(clean_entities).not_to include entity
-          end
-
-          it "doesn't add to clean_entities list when present on changed_entities" do
-            subject.register_changed(entity)
-            subject.register_clean(entity)
-
-            expect(clean_entities).not_to include entity
-          end
-
-          it "doesn't add to clean_entities list when present on removed_entities" do
-            subject.register_removed(entity)
-            subject.register_clean(entity)
-
-            expect(clean_entities).not_to include entity
           end
         end
       end
@@ -86,13 +98,6 @@ module SalarySummary
         end
 
         context 'when entity is present in another list' do
-          it "doesn't add to new_entities list when present on clean_entities" do
-            subject.register_clean(entity)
-            subject.register_new(entity)
-
-            expect(new_entities).not_to include entity
-          end
-
           it "doesn't add to new_entities list when present on changed_entities" do
             subject.register_changed(entity)
             subject.register_new(entity)
@@ -111,7 +116,6 @@ module SalarySummary
 
       describe '#register_changed entity' do
         let(:entity) { double(:entity, id: 123) }
-        let(:changed_entities) { subject.instance_variable_get(:@changed_entities) }
 
         context "when changed_entities list doesn't contain entity yet" do
           it 'adds entity to changed_entities list' do
@@ -151,13 +155,6 @@ module SalarySummary
             subject.register_changed(entity)
 
             expect(changed_entities).not_to include entity
-          end
-
-          it 'adds to changed_entities when present on clean_entities' do
-            subject.register_clean(entity)
-            subject.register_changed(entity)
-
-            expect(changed_entities).to include entity
           end
         end
       end
@@ -199,17 +196,23 @@ module SalarySummary
             expect(removed_entities).not_to include entity
           end
 
-          it "doesn't add to removed_entities list when present on changed_entities" do
+          it "removes from changed_entities before setting on removed_entities" do
             subject.register_changed(entity)
+            expect(changed_entities).to include entity
+
             subject.register_removed(entity)
 
-            expect(removed_entities).not_to include entity
+            expect(changed_entities).not_to include entity
+            expect(removed_entities).to include entity
           end
 
-          it 'adds to removed_entities when present on clean_entities' do
+          it "removes from clean_entities before setting on removed_entities" do
+            entity = Entities::Salary.new(id: 123, amount: 1400.0, period: Date.parse('07/09/2017'))
+
             subject.register_clean(entity)
             subject.register_removed(entity)
 
+            expect(clean_entities.get(Entities::Salary, 123)).to be_nil
             expect(removed_entities).to include entity
           end
         end
