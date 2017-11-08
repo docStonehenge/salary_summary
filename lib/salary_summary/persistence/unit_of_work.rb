@@ -25,7 +25,7 @@ module SalarySummary
       end
 
       # Registers <tt>entity</tt> on clean entities map, avoiding duplicates.
-      # Ingores entities without IDs and if present on other lists.
+      # Ingores entities without IDs, calls registration even if present on other lists.
       # Returns the +entity+ added or +nil+ if entity has no ID or it's a duplicate.
       #
       # Examples
@@ -33,7 +33,10 @@ module SalarySummary
       #   register_clean(SalarySummary::Entities::Salary.new(id: 123))
       #   # => <SalarySummary::Entities::Salary:0x007f8b1a9028b8 @id=123, @amount=nil, @period=nil>
       def register_clean(entity)
-        register_on @clean_entities, entity, ignore: [@new_entities]
+        register_on(
+          @clean_entities, entity,
+          ignore: [@new_entities, @changed_entities, @removed_entities]
+        )
       end
 
       # Registers <tt>entity</tt> on new entities list and on clean entities, avoiding duplicates.
@@ -45,7 +48,8 @@ module SalarySummary
       #   register_new(SalarySummary::Entities::Salary.new(id: 123))
       #   # => #<Set: {#<SalarySummary::Entities::Salary:0x007f8b1a9028b8 @id=123, @amount=nil, @period=nil>}>
       def register_new(entity)
-        register_on @new_entities, entity, ignore: [@clean_entities]
+        register_on @clean_entities, entity
+        register_on @new_entities, entity
       end
 
       # Registers <tt>entity</tt> on changed entities list, avoiding duplicates.
@@ -57,11 +61,12 @@ module SalarySummary
       #   register_changed(SalarySummary::Entities::Salary.new(id: 123))
       #   # => #<Set: {#<SalarySummary::Entities::Salary:0x007f8b1a9028b8 @id=123, @amount=nil, @period=nil>}>
       def register_changed(entity)
-        register_on @changed_entities, entity, ignore: [@clean_entities]
+        register_on @changed_entities, entity
       end
 
-      # Tries to remove <tt>entity</tt> from changed entities list, registers it
-      # on removed entities list and removes from clean entities map, avoiding duplicates.
+      # Tries to remove <tt>entity</tt> from <tt>changed_entities</tt>, registers it
+      # on removed entities list, removes from <tt>clean_entities</tt>, avoiding duplicates.
+      # If it can remove from <tt>new_entities</tt>, it doesn't register on <tt>removed_entities</tt>.
       # Ingores entities without IDs.
       # Returns the +set+ with entity added or +nil+ if entity has no ID or it's a duplicate.
       #
@@ -72,6 +77,9 @@ module SalarySummary
       def register_removed(entity)
         @changed_entities.delete entity
         @clean_entities.delete   entity
+
+        return if @new_entities.delete? entity
+
         register_on @removed_entities, entity
       end
 
@@ -87,7 +95,7 @@ module SalarySummary
       def already_present_on_lists?(entity, lists_to_ignore) # :nodoc:
         (
           [
-            @clean_entities, @new_entities, @changed_entities, @removed_entities
+            @new_entities, @changed_entities, @removed_entities
           ] - lists_to_ignore
         ).any? { |list| list.include? entity }
       end

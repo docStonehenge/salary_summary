@@ -32,8 +32,9 @@ module SalarySummary
 
       subject { described_class.new(EntityRegistry.new) }
 
-      let(:changed_entities) { subject.instance_variable_get(:@changed_entities) }
       let(:clean_entities) { subject.instance_variable_get(:@clean_entities) }
+      let(:new_entities) { subject.instance_variable_get(:@new_entities) }
+      let(:changed_entities) { subject.instance_variable_get(:@changed_entities) }
 
       describe '#register_clean entity' do
         let(:entity) { Entities::Salary.new(id: BSON::ObjectId.new, amount: 1400.0, period: Date.parse('07/09/2017')) }
@@ -70,12 +71,12 @@ module SalarySummary
 
       describe '#register_new entity' do
         let(:entity) { double(:entity, id: 123) }
-        let(:new_entities) { subject.instance_variable_get(:@new_entities) }
 
         context "when new_entities list doesn't contain entity yet" do
-          it 'adds entity to new_entities list' do
+          it 'adds entity to new_entities list and to clean entities' do
             subject.register_new(entity)
             expect(new_entities.first).to equal entity
+            expect(clean_entities.get(entity.class, 123)).to eql entity
           end
         end
 
@@ -156,6 +157,13 @@ module SalarySummary
 
             expect(changed_entities).not_to include entity
           end
+
+          it 'adds to changed_entities when already present on clean entities' do
+            subject.register_clean(entity)
+            subject.register_changed(entity)
+
+            expect(changed_entities).to include entity
+          end
         end
       end
 
@@ -167,6 +175,14 @@ module SalarySummary
           it 'adds entity to removed_entities list' do
             subject.register_removed(entity)
             expect(removed_entities.first).to equal entity
+          end
+
+          it 'removes entity from clean_entities first' do
+            subject.register_clean(entity)
+            subject.register_removed(entity)
+
+            expect(removed_entities.first).to equal entity
+            expect(clean_entities.get(entity.class, entity.id)).to be_nil
           end
         end
 
@@ -189,11 +205,14 @@ module SalarySummary
         end
 
         context 'when entity is present in another list' do
-          it "doesn't add to removed_entities list when present on new_entities" do
+          it "doesn't add to removed_entities and remove from new_entities" do
             subject.register_new(entity)
+            expect(new_entities).to include entity
+
             subject.register_removed(entity)
 
             expect(removed_entities).not_to include entity
+            expect(new_entities).not_to include entity
           end
 
           it "removes from changed_entities before setting on removed_entities" do
