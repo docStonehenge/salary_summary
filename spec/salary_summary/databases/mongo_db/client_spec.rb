@@ -7,6 +7,31 @@ module SalarySummary
         let(:mongodb_client) { double(:client) }
         let(:logger)         { double(:logger) }
 
+        describe '.new_connection' do
+          it 'sets a new client instance as connection on current Thread' do
+            allow(described_class).to receive(:new).and_return mongodb_client
+
+            described_class.new_connection
+
+            expect(Thread.current.thread_variable_get(:connection)).to equal mongodb_client
+          end
+        end
+
+        describe '.connection= client' do
+          it 'registers client object on current Thread as connection variable' do
+            described_class.connection = mongodb_client
+            expect(Thread.current.thread_variable_get(:connection)).to equal mongodb_client
+          end
+        end
+
+        describe '.connection' do
+          it 'returns connection variable set on current Thread' do
+            described_class.connection = mongodb_client
+
+            expect(described_class.connection).to equal mongodb_client
+          end
+        end
+
         describe '.set_database_logging' do
           before do
             allow(Mongo::Logger).to receive(:logger).and_return logger
@@ -43,7 +68,7 @@ module SalarySummary
 
             subject = described_class.new
 
-            expect(subject.connection).to eql mongodb_client
+            expect(subject.db_client).to eql mongodb_client
             expect(subject.id_generator).to eql id_gen
           end
 
@@ -73,7 +98,7 @@ module SalarySummary
           it 'returns collection based on name, fetched as key from db connection' do
             subject = described_class.new
 
-            expect(subject.connection).to receive(:[]).once.with(:foo).and_return collection
+            expect(subject.db_client).to receive(:[]).once.with(:foo).and_return collection
 
             expect(
               subject.database_collection(:foo)
