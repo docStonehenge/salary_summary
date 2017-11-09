@@ -15,6 +15,8 @@ require 'salary_summary/persistence/entity_registry'
 require 'salary_summary/persistence/unit_of_work'
 
 require 'salary_summary/registry'
+require 'salary_summary/repositories/repository_registry'
+require 'salary_summary/repositories/salaries_repository'
 
 require 'salary_summary/entities/comparison_error'
 require 'salary_summary/entities/salary'
@@ -26,7 +28,6 @@ require 'salary_summary/builders/table_builder'
 require 'salary_summary/exporters/annual_salary_report'
 
 require 'salary_summary/queries/entity_not_found_error'
-require 'salary_summary/repositories/salaries_repository'
 
 module SalarySummary
   require 'dotenv'
