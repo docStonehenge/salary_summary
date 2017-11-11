@@ -42,6 +42,19 @@ module SalarySummary
       let(:new_entities) { subject.instance_variable_get(:@new_entities) }
       let(:changed_entities) { subject.instance_variable_get(:@changed_entities) }
 
+      describe '#get entity_class, entity_id' do
+        let(:entity) { Entities::Salary.new(id: BSON::ObjectId.new, amount: 1400.0, period: Date.parse('07/09/2017')) }
+
+        it 'returns the entity set on clean entities list' do
+          clean_entities.add(entity)
+          expect(subject.get entity.class, entity.id).to equal entity
+        end
+
+        it 'returns nil if no entity was found' do
+          expect(subject.get entity.class, entity.id).to be_nil
+        end
+      end
+
       describe '#register_clean entity' do
         let(:entity) { Entities::Salary.new(id: BSON::ObjectId.new, amount: 1400.0, period: Date.parse('07/09/2017')) }
 

@@ -27,6 +27,12 @@ module SalarySummary
         @removed_entities = Set.new
       end
 
+      # Returns +entity+ found by <tt>entity_class</tt> and <tt>entity_id</tt>
+      # on <tt>clean_entities</tt> list or nil if no entity is found.
+      def get(entity_class, entity_id)
+        @clean_entities.get(entity_class, entity_id)
+      end
+
       # Registers <tt>entity</tt> on clean entities map, avoiding duplicates.
       # Ingores entities without IDs, calls registration even if present on other lists.
       # Returns the +entity+ added or +nil+ if entity has no ID or it's a duplicate.
