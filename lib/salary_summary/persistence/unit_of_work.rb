@@ -12,8 +12,11 @@ module SalarySummary
       end
 
       # Returns <tt>current_uow</tt> UnitOfWork on running thread.
+      # Raises UnitOfWorkNotStartedError when no instance is found on thread.
       def self.current
-        Thread.current.thread_variable_get(:current_uow)
+        Thread.current.thread_variable_get(:current_uow).tap do |uow|
+          raise UnitOfWorkNotStartedError unless uow
+        end
       end
 
       # Initializes an instance with three new Set objects and an EntityRegistry

@@ -28,6 +28,12 @@ module SalarySummary
           described_class.current = subject
           expect(described_class.current).to equal subject
         end
+
+        it 'raises UnitOfWorkNotStartedError when no instance is set on current Thread' do
+          expect {
+            Thread.new { described_class.current }.join
+          }.to raise_error(UnitOfWorkNotStartedError)
+        end
       end
 
       subject { described_class.new(EntityRegistry.new) }
