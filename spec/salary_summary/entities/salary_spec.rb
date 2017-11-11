@@ -3,6 +3,10 @@ require 'spec_helper'
 module SalarySummary
   module Entities
     describe Salary do
+      it '.repository' do
+        expect(described_class.repository).to eql Repositories::SalariesRepository
+      end
+
       context 'can be initialized with any atributes' do
         it 'initializes only with amount' do
           subject = described_class.new(amount: 200)

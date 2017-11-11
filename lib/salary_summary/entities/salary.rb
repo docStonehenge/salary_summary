@@ -8,6 +8,10 @@ module SalarySummary
       class << self
         attr_reader :fields_list
 
+        def repository
+          Repositories::SalariesRepository
+        end
+
         private
 
         def fields(*names)
