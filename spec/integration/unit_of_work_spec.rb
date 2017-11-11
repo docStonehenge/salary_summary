@@ -8,7 +8,7 @@ describe 'Persistence::UnitOfWork integration tests', integration: true do
   end
 
   before do
-    Thread.current[:current_uow] = nil
+    Thread.current.thread_variable_set(:current_uow, nil)
   end
 
   it 'sets unit of work object into current Thread only' do

@@ -1,6 +1,6 @@
 module SalarySummary
   module Repositories
-    class RepositoryRegistry
+    class Registry
       # Returns the repository object found by <tt>entity_type</tt>.
       # If not found by the first time called, sets a new object of repository type for <tt>entity_type</tt>
       # on map and returns it.

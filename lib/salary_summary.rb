@@ -15,7 +15,7 @@ require 'salary_summary/persistence/entity_registry'
 require 'salary_summary/persistence/unit_of_work_not_started_error'
 require 'salary_summary/persistence/unit_of_work'
 
-require 'salary_summary/repositories/repository_registry'
+require 'salary_summary/repositories/registry'
 require 'salary_summary/repositories/salaries_repository'
 
 require 'salary_summary/entities/comparison_error'

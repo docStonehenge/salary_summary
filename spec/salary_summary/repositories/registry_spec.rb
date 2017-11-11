@@ -2,7 +2,7 @@ require 'spec_helper'
 
 module SalarySummary
   module Repositories
-    describe RepositoryRegistry do
+    describe Registry do
       class EntitiesRepository; end
       let(:entity) { double(:entity, repository: EntitiesRepository) }
       let!(:repo) { EntitiesRepository.new }
