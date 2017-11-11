@@ -7,6 +7,19 @@ module SalarySummary
         let(:mongodb_client) { double(:client) }
         let(:logger)         { double(:logger) }
 
+        describe '.current_or_new_connection' do
+          it 'returns current Thread connection when present' do
+            expect(described_class).to receive(:connection).and_return mongodb_client
+            expect(described_class.current_or_new_connection).to eql mongodb_client
+          end
+
+          it 'creates new client on current Thread when no other is present' do
+            expect(described_class).to receive(:connection).and_return nil
+            expect(described_class).to receive(:new_connection).and_return mongodb_client
+            expect(described_class.current_or_new_connection).to eql mongodb_client
+          end
+        end
+
         describe '.new_connection' do
           it 'sets a new client instance as connection on current Thread' do
             allow(described_class).to receive(:new).and_return mongodb_client

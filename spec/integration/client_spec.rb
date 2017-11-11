@@ -61,6 +61,7 @@ describe 'Databases::MongoDB::Client integration tests', integration: true do
   end
 
   after do
+    Thread.current[:connection] = nil
     subject.db_client.close
   end
 end

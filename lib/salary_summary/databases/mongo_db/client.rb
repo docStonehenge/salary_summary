@@ -6,6 +6,12 @@ module SalarySummary
       class Client
         attr_reader :db_client, :id_generator
 
+        # Returns current Thread already set client object or returns a new
+        # client object set on Thread.
+        def self.current_or_new_connection
+          connection or new_connection
+        end
+
         # Sets a new instance of Client as <tt>connection</tt> on running thread.
         def self.new_connection
           self.connection = new
