@@ -7,8 +7,8 @@ module SalarySummary
       # a new UnitOfWork on current Thread.
       def initialize
         super(
-          "There is no UnitOfWork started on running Thread."\
-          "To proper persist entities to the database, a new instance"\
+          "There is no UnitOfWork started on running Thread. "\
+          "To proper persist entities to the database, a new instance "\
           "is necessary. A call to UnitOfWork.new_current is needed."
         )
       end

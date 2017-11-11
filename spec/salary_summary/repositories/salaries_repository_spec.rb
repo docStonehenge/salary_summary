@@ -3,13 +3,13 @@ require 'spec_helper'
 module SalarySummary
   module Repositories
     describe SalariesRepository do
-      let(:client)         { double(:client) }
-      let(:registry)       { double(:registry) }
-      let(:collection)     { double(:collection) }
-      let(:entries)        { double(:entries) }
-      let(:salary)         { double(:salary, period: Date.parse('01/2016'), amount: 150.0) }
-      let(:january)        { double(:salary, id: 1, period: Date.parse('January, 2016'), amount: 150.0) }
-      let(:february)       { double(:salary, id: 2, period: Date.parse('February, 2016'), amount: 200.0) }
+      let(:client) { double(:client) }
+      let(:uow) { double(:uow) }
+      let(:collection) { double(:collection) }
+      let(:entries) { double(:entries) }
+      let(:salary) { double(:salary, period: Date.parse('01/2016'), amount: 150.0) }
+      let(:january) { double(:salary, id: 1, period: Date.parse('January, 2016'), amount: 150.0) }
+      let(:february) { double(:salary, id: 2, period: Date.parse('February, 2016'), amount: 200.0) }
 
       subject { described_class.new(client: client) }
 
@@ -37,12 +37,25 @@ module SalarySummary
       end
 
       describe '#find id' do
+        context 'when no UnitOfWork is set on current Thread' do
+          it 'raises error on call to get loaded entities' do
+            expect(
+              Persistence::UnitOfWork
+            ).to receive(:current).and_raise Persistence::UnitOfWorkNotStartedError
+
+            expect {
+              subject.find('123')
+            }.to raise_error(Persistence::UnitOfWorkNotStartedError)
+          end
+        end
+
         context 'when salary is not yet loaded on registry' do
           before do
-            allow(Registry).to receive(:get).once.with('123').and_return nil
+            allow(Persistence::UnitOfWork).to receive(:current).and_return uow
+            allow(uow).to receive(:get).once.with(Entities::Salary, '123').and_return nil
           end
 
-          it 'queries for salary with id, sets into registry and returns salary object' do
+          it 'queries for salary with id, sets into current uow and returns salary object' do
             expect(collection).to receive(:find).once.with(
                                     _id: '123'
                                   ).and_return entries
@@ -52,10 +65,10 @@ module SalarySummary
                                )
 
             expect(Entities::Salary).to receive(:new).once.with(
-                                           id: '123', period: Date.parse('January, 2016'), amount: 150.0
-                                         ).and_return salary
+                                          id: '123', period: Date.parse('January, 2016'), amount: 150.0
+                                        ).and_return salary
 
-            expect(Registry).to receive(:set).once.with(salary).and_return salary
+            expect(uow).to receive(:register_clean).once.with(salary).and_return salary
 
             expect(subject.find('123')).to eql salary
           end
@@ -63,10 +76,11 @@ module SalarySummary
 
         context 'when salary is already loaded on registry' do
           before do
-            allow(Registry).to receive(:get).once.with('123').and_return salary
+            allow(Persistence::UnitOfWork).to receive(:current).and_return uow
+            allow(uow).to receive(:get).once.with(Entities::Salary, '123').and_return salary
           end
 
-          it 'returns salary got from registry map' do
+          it 'returns salary got from uow clean entities list' do
             expect(collection).not_to receive(:find).with(any_args)
             expect(Entities::Salary).not_to receive(:new).with(any_args)
             expect(subject.find('123')).to eql salary
@@ -75,7 +89,8 @@ module SalarySummary
 
         context 'when salary ID is not found' do
           it 'raises EntityNotFoundError' do
-            allow(Registry).to receive(:get).once.with('123').and_return nil
+            allow(Persistence::UnitOfWork).to receive(:current).and_return uow
+            allow(uow).to receive(:get).once.with(Entities::Salary, '123').and_return nil
 
             expect(collection).to receive(:find).once.with(
                                     _id: '123'
@@ -92,7 +107,27 @@ module SalarySummary
       end
 
       describe '#find_all modifier: {}, sorted_by: {}' do
-        context 'when registry has no objects loaded' do
+        it 'raises error when call to current UnitOfWork raises error' do
+          expect(collection).to receive(:find).with({}).and_return entries
+
+          expect(entries).to receive(:entries).and_return(
+                               [{ '_id' => 1, 'period' => Time.parse('2016-01-01'), 'amount' => 150.0 }]
+                             )
+
+          expect(
+            Persistence::UnitOfWork
+          ).to receive(:current).and_raise Persistence::UnitOfWorkNotStartedError
+
+          expect {
+            subject.find_all
+          }.to raise_error(Persistence::UnitOfWorkNotStartedError)
+        end
+
+        context 'when UnitOfWork has no clean objects loaded' do
+          before do
+            allow(Persistence::UnitOfWork).to receive(:current).and_return uow
+          end
+
           context 'when provided with a query modifier' do
             before do
               expect(collection).to receive(:find).with(period: Date.parse('January/2016')).and_return entries
@@ -101,15 +136,15 @@ module SalarySummary
                                    [{ '_id' => 1, 'period' => Time.parse('2016-01-01'), 'amount' => 150.0 }]
                                  )
 
-              expect(Registry).to receive(:get).once.with(1).and_return nil
+              expect(uow).to receive(:get).once.with(Entities::Salary, 1).and_return nil
             end
 
             it 'returns a set of Salary objects found on database' do
               expect(Entities::Salary).to receive(:new).once.with(
-                                             id: 1, period: Date.parse('January, 2016'), amount: 150.0
-                                           ).and_return salary
+                                            id: 1, period: Date.parse('January, 2016'), amount: 150.0
+                                          ).and_return salary
 
-              expect(Registry).to receive(:set).once.with(salary).and_return salary
+              expect(uow).to receive(:register_clean).once.with(salary).and_return salary
 
               expect(
                 subject.find_all(modifier: { period: Date.parse('January/2016') })
@@ -128,21 +163,21 @@ module SalarySummary
                                    ]
                                  )
 
-              expect(Registry).to receive(:get).once.with(1).and_return nil
-              expect(Registry).to receive(:get).once.with(2).and_return nil
+              expect(uow).to receive(:get).once.with(Entities::Salary, 1).and_return nil
+              expect(uow).to receive(:get).once.with(Entities::Salary, 2).and_return nil
             end
 
             it 'returns all documents as Salary objects' do
               expect(Entities::Salary).to receive(:new).once.with(
-                                             id: 1, period: Date.parse('January, 2016'), amount: 150.0
-                                           ).and_return january
+                                            id: 1, period: Date.parse('January, 2016'), amount: 150.0
+                                          ).and_return january
 
               expect(Entities::Salary).to receive(:new).once.with(
-                                             id: 2, period: Date.parse('February, 2016'), amount: 200.0
-                                           ).and_return february
+                                            id: 2, period: Date.parse('February, 2016'), amount: 200.0
+                                          ).and_return february
 
-              expect(Registry).to receive(:set).once.with(january).and_return january
-              expect(Registry).to receive(:set).once.with(february).and_return february
+              expect(uow).to receive(:register_clean).once.with(january).and_return january
+              expect(uow).to receive(:register_clean).once.with(february).and_return february
 
               expect(subject.find_all).to eql [january, february]
             end
@@ -150,6 +185,9 @@ module SalarySummary
 
           context 'when provided with a sorted_by option' do
             before do
+              expect(uow).to receive(:get).once.with(Entities::Salary, 1).and_return nil
+              expect(uow).to receive(:get).once.with(Entities::Salary, 2).and_return nil
+
               expect(collection).to receive(:find).with({}).and_return entries
               expect(entries).to receive(:sort).with(period: 1).and_return entries
 
@@ -163,34 +201,36 @@ module SalarySummary
 
             it 'returns all documents sorted as salaries' do
               expect(Entities::Salary).to receive(:new).once.with(
-                                             id: 2, period: Date.parse('January, 2016'), amount: 150.0
-                                           ).and_return january
+                                            id: 2, period: Date.parse('January, 2016'), amount: 150.0
+                                          ).and_return january
 
               expect(Entities::Salary).to receive(:new).once.with(
-                                             id: 1, period: Date.parse('February, 2016'), amount: 200.0
-                                           ).and_return february
+                                            id: 1, period: Date.parse('February, 2016'), amount: 200.0
+                                          ).and_return february
 
-              expect(Registry).to receive(:set).once.with(january).and_return january
-              expect(Registry).to receive(:set).once.with(february).and_return february
+              expect(uow).to receive(:register_clean).once.with(january).and_return january
+              expect(uow).to receive(:register_clean).once.with(february).and_return february
 
               expect(subject.find_all(sorted_by: { period: 1 })).to eql [january, february]
             end
           end
         end
 
-        context 'when registry contains salaries instances loaded' do
+        context 'when UnitOfWork contains clean salaries instances loaded' do
           before do
+            allow(Persistence::UnitOfWork).to receive(:current).and_return uow
+
             @loaded_salary = Entities::Salary.new(
               id: 124, amount: 4000.0, period: Date.parse('07/01/2016')
             )
 
-            expect(Registry).to receive(
-                                  :get
-                                ).once.with(124).and_return @loaded_salary
+            expect(uow).to receive(
+                             :get
+                           ).once.with(Entities::Salary, 124).and_return @loaded_salary
 
-            expect(Registry).to receive(
-                                  :get
-                                ).once.with(125).and_return nil
+            expect(uow).to receive(
+                             :get
+                           ).once.with(Entities::Salary, 125).and_return nil
           end
 
           context 'when provided with a query modifier' do
@@ -207,14 +247,14 @@ module SalarySummary
 
             it 'returns a set of Salary objects already loaded' do
               expect(Entities::Salary).not_to receive(:new).with(
-                                             id: 124, period: Date.parse('January, 2016'), amount: 150.0
-                                           )
+                                                id: 124, period: Date.parse('January, 2016'), amount: 150.0
+                                              )
 
               expect(Entities::Salary).to receive(:new).once.with(
-                                             id: 125, period: Date.parse('February, 2016'), amount: 150.0
-                                           ).and_return salary
+                                            id: 125, period: Date.parse('February, 2016'), amount: 150.0
+                                          ).and_return salary
 
-              expect(Registry).to receive(:set).once.with(salary).and_return salary
+              expect(uow).to receive(:register_clean).once.with(salary).and_return salary
 
               expect(
                 subject.find_all(modifier: { period: Date.parse('January/2016') })
@@ -236,14 +276,14 @@ module SalarySummary
 
             it 'returns all documents as Salary objects' do
               expect(Entities::Salary).not_to receive(:new).with(
-                                             id: 124, period: Date.parse('January, 2016'), amount: 150.0
-                                           )
+                                                id: 124, period: Date.parse('January, 2016'), amount: 150.0
+                                              )
 
               expect(Entities::Salary).to receive(:new).once.with(
-                                             id: 125, period: Date.parse('February, 2016'), amount: 200.0
-                                           ).and_return february
+                                            id: 125, period: Date.parse('February, 2016'), amount: 200.0
+                                          ).and_return february
 
-              expect(Registry).to receive(:set).once.with(february).and_return february
+              expect(uow).to receive(:register_clean).once.with(february).and_return february
 
               expect(subject.find_all).to eql [@loaded_salary, february]
             end
@@ -264,14 +304,14 @@ module SalarySummary
 
             it 'returns all documents sorted as salaries' do
               expect(Entities::Salary).not_to receive(:new).with(
-                                             id: 124, period: Date.parse('January, 2016'), amount: 150.0
-                                           )
+                                                id: 124, period: Date.parse('January, 2016'), amount: 150.0
+                                              )
 
               expect(Entities::Salary).to receive(:new).once.with(
-                                             id: 125, period: Date.parse('February, 2016'), amount: 200.0
-                                           ).and_return february
+                                            id: 125, period: Date.parse('February, 2016'), amount: 200.0
+                                          ).and_return february
 
-              expect(Registry).to receive(:set).once.with(february).and_return february
+              expect(uow).to receive(:register_clean).once.with(february).and_return february
 
               expect(subject.find_all(sorted_by: { period: 1 })).to eql [@loaded_salary, february]
             end

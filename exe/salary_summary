@@ -3,6 +3,7 @@
 require "salary_summary"
 include SalarySummary
 
+Persistence::UnitOfWork.new_current
 @repository    = Repositories::SalariesRepository.new
 @table_builder = Builders::TableBuilder.new(@repository)
 @information   = ''

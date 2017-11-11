@@ -43,13 +43,15 @@ module SalarySummary
       end
 
       def load_salary(id)
-        if (registered_salary = Registry.get(id))
+        if (registered_salary = Persistence::UnitOfWork.current.get(@object_klass, id))
           return registered_salary
         end
 
         entry = yield
 
-        Registry.set(instantiate_salary_with(entry))
+        Persistence::UnitOfWork.current.register_clean(
+          instantiate_salary_with(entry)
+        )
       end
 
       def instantiate_salary_with(entry)
