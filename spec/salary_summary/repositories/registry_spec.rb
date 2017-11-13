@@ -3,9 +3,12 @@ require 'spec_helper'
 module SalarySummary
   module Repositories
     describe Registry do
-      class EntitiesRepository; end
       let(:entity) { double(:entity, repository: EntitiesRepository) }
-      let!(:repo) { EntitiesRepository.new }
+
+      let!(:repo) do
+        class EntitiesRepository; end
+        EntitiesRepository.new
+      end
 
       describe '.[] class_name' do
         context 'when no registry is set yet on current Thread' do

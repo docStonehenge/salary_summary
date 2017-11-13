@@ -3,6 +3,8 @@ require 'spec_helper'
 module SalarySummary
   module Entities
     describe Salary do
+      let(:uow) { double(:uow) }
+
       it '.repository' do
         expect(described_class.repository).to eql Repositories::SalariesRepository
       end
@@ -47,6 +49,59 @@ module SalarySummary
 
         it '#_id' do
           expect(subject._id).to eql subject.id
+        end
+
+        describe '#id= id' do
+          it 'just sets ID value on object' do
+            expect(Persistence::UnitOfWork).not_to receive(:current)
+            subject.id = 123
+
+            expect(subject.id).to eql 123
+          end
+        end
+
+        describe '#amount= value' do
+          it 'sets attribute value and registers entity as changed on current UnitOfWork' do
+            expect(Persistence::UnitOfWork).to receive(:current).once.and_return uow
+            expect(uow).to receive(:register_changed).once.with(subject)
+
+            subject.amount = 420
+
+            expect(subject.amount).to eql 420
+          end
+
+          it 'just sets attribute value when call to current UnitOfWork raises error' do
+            expect(
+              Persistence::UnitOfWork
+            ).to receive(:current).once.and_raise(Persistence::UnitOfWorkNotStartedError)
+
+            subject.amount = 420
+
+            expect(subject.amount).to eql 420
+          end
+        end
+
+        describe '#period= value' do
+          let(:period) { Date.parse('13/11/2017') }
+
+          it 'sets attribute value and registers entity as changed on current UnitOfWork' do
+            expect(Persistence::UnitOfWork).to receive(:current).once.and_return uow
+            expect(uow).to receive(:register_changed).once.with(subject)
+
+            subject.period = period
+
+            expect(subject.period).to eql period
+          end
+
+          it 'just sets attribute value when call to current UnitOfWork raises error' do
+            expect(
+              Persistence::UnitOfWork
+            ).to receive(:current).once.and_raise(Persistence::UnitOfWorkNotStartedError)
+
+            subject.period = period
+
+            expect(subject.period).to eql period
+          end
         end
       end
 

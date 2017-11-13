@@ -49,12 +49,10 @@ module SalarySummary
 
         entry = yield
 
-        Persistence::UnitOfWork.current.register_clean(
-          instantiate_salary_with(entry)
-        )
+        Persistence::UnitOfWork.current.register_clean(new_entity_for(entry))
       end
 
-      def instantiate_salary_with(entry)
+      def new_entity_for(entry)
         @object_klass.new(
           id: entry['_id'],
           period: entry['period'].to_date,

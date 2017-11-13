@@ -9,7 +9,7 @@ module SalarySummary
       # object and calls it; if no registry is found, it registers a new one on the Thread
       # to use it.
       def self.[](entity_type)
-        (repositories || new_repositories)[entity_type]
+        (repositories or new_repositories)[entity_type]
       end
 
       # Registers a new Registry object into current Thread as <tt>repositories</tt>.
