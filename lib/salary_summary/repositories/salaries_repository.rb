@@ -2,12 +2,14 @@ module SalarySummary
   module Repositories
     class SalariesRepository
       def initialize(client: Databases::MongoDB::Client.current_or_new_connection)
-        @collection   = client.database_collection :salaries
+        @connection   = client
         @object_klass = Entities::Salary
       end
 
       def save(salary)
-        @collection.insert_one(period: salary.period, amount: salary.amount)
+        @connection.insert_on(
+          :salaries, period: salary.period, amount: salary.amount
+        )
       end
 
       def find(id)
@@ -29,17 +31,14 @@ module SalarySummary
       end
 
       def sum_by_amount
-        aggregation = salaries_sum_aggregation
+        aggregation = sum_aggregation
         aggregation.empty? ? 0 : aggregation.first.dig('sum')
       end
 
       private
 
-      def get_entries(modifier, sorted_by)
-        query = @collection.find(modifier)
-        query = query.sort(sorted_by) unless sorted_by.empty?
-
-        query.entries
+      def get_entries(filter, sorted_by)
+        @connection.find_on(:salaries, filter: filter, sort: sorted_by)
       end
 
       def load_salary(id)
@@ -60,11 +59,10 @@ module SalarySummary
         )
       end
 
-      def salaries_sum_aggregation
-        @collection.aggregate(
-          [
-            { :$group => { _id: 'Sum', sum: { :$sum => '$amount' } } }
-          ]
+      def sum_aggregation
+        @connection.aggregate_on(
+          :salaries,
+          { :$group => { _id: 'Sum', sum: { :$sum => '$amount' } } }
         ).entries
       end
     end

@@ -13,24 +13,19 @@ module SalarySummary
 
       subject { described_class.new(client: client) }
 
-      before do
-        expect(client).to receive(
-                            :database_collection
-                          ).with(:salaries).and_return collection
-      end
-
       describe 'attributes' do
         specify do
-          expect(subject.instance_variable_get(:@collection)).to eql collection
+          expect(subject.instance_variable_get(:@connection)).to eql client
           expect(subject.instance_variable_get(:@object_klass)).to eql Entities::Salary
         end
       end
 
       describe '#save salary' do
         it 'saves a salary instance on salaries collection' do
-          expect(collection).to receive(:insert_one).with(
-                                  period: Date.parse('01/2016'), amount: 150.0
-                                )
+          expect(client).to receive(:insert_on).once.with(
+                              :salaries,
+                              period: Date.parse('01/2016'), amount: 150.0
+                            )
 
           subject.save salary
         end
@@ -56,13 +51,9 @@ module SalarySummary
           end
 
           it 'queries for salary with id, sets into current uow and returns salary object' do
-            expect(collection).to receive(:find).once.with(
-                                    _id: '123'
-                                  ).and_return entries
-
-            expect(entries).to receive(:entries).and_return(
-                                 [{ '_id' => '123', 'period' => Time.parse('2016-01-01'), 'amount' => 150.0 }]
-                               )
+            expect(client).to receive(:find_on).once.with(
+                                :salaries, filter: { _id: '123' }, sort: {}
+                              ).and_return [{ '_id' => '123', 'period' => Time.parse('2016-01-01'), 'amount' => 150.0 }]
 
             expect(Entities::Salary).to receive(:new).once.with(
                                           id: '123', period: Date.parse('January, 2016'), amount: 150.0
@@ -81,7 +72,7 @@ module SalarySummary
           end
 
           it 'returns salary got from uow clean entities list' do
-            expect(collection).not_to receive(:find).with(any_args)
+            expect(client).not_to receive(:find_on).with(any_args)
             expect(Entities::Salary).not_to receive(:new).with(any_args)
             expect(subject.find('123')).to eql salary
           end
@@ -92,11 +83,9 @@ module SalarySummary
             allow(Persistence::UnitOfWork).to receive(:current).and_return uow
             allow(uow).to receive(:get).once.with(Entities::Salary, '123').and_return nil
 
-            expect(collection).to receive(:find).once.with(
-                                    _id: '123'
-                                  ).and_return entries
-
-            expect(entries).to receive(:entries).and_return([])
+            expect(client).to receive(:find_on).once.with(
+                                :salaries, filter: { _id: '123' }, sort: {}
+                              ).and_return []
 
             expect { subject.find('123') }.to raise_error(
                                                 Queries::EntityNotFoundError,
@@ -108,11 +97,11 @@ module SalarySummary
 
       describe '#find_all modifier: {}, sorted_by: {}' do
         it 'raises error when call to current UnitOfWork raises error' do
-          expect(collection).to receive(:find).with({}).and_return entries
-
-          expect(entries).to receive(:entries).and_return(
-                               [{ '_id' => 1, 'period' => Time.parse('2016-01-01'), 'amount' => 150.0 }]
-                             )
+          expect(client).to receive(:find_on).with(
+                              :salaries, filter: {}, sort: {}
+                            ).and_return(
+                              [{ '_id' => 1, 'period' => Time.parse('2016-01-01'), 'amount' => 150.0 }]
+                            )
 
           expect(
             Persistence::UnitOfWork
@@ -130,11 +119,9 @@ module SalarySummary
 
           context 'when provided with a query modifier' do
             before do
-              expect(collection).to receive(:find).with(period: Date.parse('January/2016')).and_return entries
-
-              expect(entries).to receive(:entries).and_return(
-                                   [{ '_id' => 1, 'period' => Time.parse('2016-01-01'), 'amount' => 150.0 }]
-                                 )
+              expect(client).to receive(:find_on).once.with(
+                                  :salaries, filter: { period: Date.parse('January/2016') }, sort: {}
+                                ).and_return [{ '_id' => 1, 'period' => Time.parse('2016-01-01'), 'amount' => 150.0 }]
 
               expect(uow).to receive(:get).once.with(Entities::Salary, 1).and_return nil
             end
@@ -154,14 +141,14 @@ module SalarySummary
 
           context 'when not provided with a query modifier' do
             before do
-              expect(collection).to receive(:find).with({}).and_return entries
-
-              expect(entries).to receive(:entries).and_return(
-                                   [
-                                     { '_id' => 1, 'period' => Time.parse('2016-01-01'), 'amount' => 150.0 },
-                                     { '_id' => 2, 'period' => Time.parse('2016-02-01'), 'amount' => 200.0 }
-                                   ]
-                                 )
+              expect(client).to receive(:find_on).with(
+                                  :salaries, filter: {}, sort: {}
+                                ).and_return(
+                                  [
+                                    { '_id' => 1, 'period' => Time.parse('2016-01-01'), 'amount' => 150.0 },
+                                    { '_id' => 2, 'period' => Time.parse('2016-02-01'), 'amount' => 200.0 }
+                                  ]
+                                )
 
               expect(uow).to receive(:get).once.with(Entities::Salary, 1).and_return nil
               expect(uow).to receive(:get).once.with(Entities::Salary, 2).and_return nil
@@ -188,15 +175,14 @@ module SalarySummary
               expect(uow).to receive(:get).once.with(Entities::Salary, 1).and_return nil
               expect(uow).to receive(:get).once.with(Entities::Salary, 2).and_return nil
 
-              expect(collection).to receive(:find).with({}).and_return entries
-              expect(entries).to receive(:sort).with(period: 1).and_return entries
-
-              expect(entries).to receive(:entries).and_return(
-                                   [
-                                     { '_id' => 2, 'period' => Time.parse('2016-01-01'), 'amount' => 150.0 },
-                                     { '_id' => 1, 'period' => Time.parse('2016-02-01'), 'amount' => 200.0 }
-                                   ]
-                                 )
+              expect(client).to receive(:find_on).with(
+                                  :salaries, filter: {}, sort: { period: 1 }
+                                ).and_return(
+                                  [
+                                    { '_id' => 2, 'period' => Time.parse('2016-01-01'), 'amount' => 150.0 },
+                                    { '_id' => 1, 'period' => Time.parse('2016-02-01'), 'amount' => 200.0 }
+                                  ]
+                                )
             end
 
             it 'returns all documents sorted as salaries' do
@@ -235,14 +221,16 @@ module SalarySummary
 
           context 'when provided with a query modifier' do
             before do
-              expect(collection).to receive(:find).with(period: Date.parse('January/2016')).and_return entries
-
-              expect(entries).to receive(:entries).and_return(
-                                   [
-                                     { '_id' => 124, 'period' => Time.parse('2016-01-01'), 'amount' => 150.0 },
-                                     { '_id' => 125, 'period' => Time.parse('2016-02-01'), 'amount' => 150.0 }
-                                   ]
-                                 )
+              expect(client).to receive(:find_on).once.with(
+                                  :salaries,
+                                  filter: { period: Date.parse('January/2016') },
+                                  sort: {}
+                                ).and_return(
+                                  [
+                                    { '_id' => 124, 'period' => Time.parse('2016-01-01'), 'amount' => 150.0 },
+                                    { '_id' => 125, 'period' => Time.parse('2016-02-01'), 'amount' => 150.0 }
+                                  ]
+                                )
             end
 
             it 'returns a set of Salary objects already loaded' do
@@ -264,9 +252,9 @@ module SalarySummary
 
           context 'when not provided with a query modifier' do
             before do
-              expect(collection).to receive(:find).with({}).and_return entries
-
-              expect(entries).to receive(:entries).and_return(
+              expect(client).to receive(:find_on).once.with(
+                                  :salaries, filter: {}, sort: {}
+                                ).and_return(
                                    [
                                      { '_id' => 124, 'period' => Time.parse('2016-01-01'), 'amount' => 150.0 },
                                      { '_id' => 125, 'period' => Time.parse('2016-02-01'), 'amount' => 200.0 }
@@ -291,15 +279,14 @@ module SalarySummary
 
           context 'when provided with a sorted_by option' do
             before do
-              expect(collection).to receive(:find).with({}).and_return entries
-              expect(entries).to receive(:sort).with(period: 1).and_return entries
-
-              expect(entries).to receive(:entries).and_return(
-                                   [
-                                     { '_id' => 124, 'period' => Time.parse('2016-01-01'), 'amount' => 150.0 },
-                                     { '_id' => 125, 'period' => Time.parse('2016-02-01'), 'amount' => 200.0 }
-                                   ]
-                                 )
+              expect(client).to receive(:find_on).with(
+                                  :salaries, filter: {}, sort: { period: 1 }
+                                ).and_return(
+                                  [
+                                    { '_id' => 124, 'period' => Time.parse('2016-01-01'), 'amount' => 150.0 },
+                                    { '_id' => 125, 'period' => Time.parse('2016-02-01'), 'amount' => 200.0 }
+                                  ]
+                                )
             end
 
             it 'returns all documents sorted as salaries' do
@@ -320,22 +307,19 @@ module SalarySummary
       end
 
       describe '#sum_by_amount' do
-        before do
-          expect(collection).to receive(:aggregate).with(
-                                  [
-                                    { :$group => { _id: 'Sum', sum: { :$sum => '$amount' } } }
-                                  ]
-                                ).and_return entries
-        end
-
         it 'returns a document with the sum of all entries on the collection' do
-          expect(entries).to receive(:entries).and_return [{ '_id' => 'Sum', 'sum' => 1000.0 }]
+          allow(client).to receive(:aggregate_on).once.with(
+                             :salaries, { :$group => { _id: 'Sum', sum: { :$sum => '$amount' } } }
+                           ).and_return [{ '_id' => 'Sum', 'sum' => 1000.0 }]
 
           expect(subject.sum_by_amount).to eql 1000.0
         end
 
         it 'returns zero if aggregation returns empty' do
-          expect(entries).to receive(:entries).and_return []
+          expect(client).to receive(:aggregate_on).once.with(
+                              :salaries, { :$group => { _id: 'Sum', sum: { :$sum => '$amount' } } }
+                            ).and_return []
+
           expect(subject.sum_by_amount).to be_zero
         end
       end

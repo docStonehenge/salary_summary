@@ -6,6 +6,7 @@ module SalarySummary
       describe Client do
         let(:mongodb_client) { double(:client) }
         let(:logger)         { double(:logger) }
+        let(:collection)     { double(:collection) }
 
         describe '.current_or_new_connection' do
           it 'returns current Thread connection when present' do
@@ -99,9 +100,115 @@ module SalarySummary
           end
         end
 
-        describe '#database_collection name' do
-          let(:collection) { double(:collection) }
+        describe '#find_on collection, filter: {}, sort: {}' do
+          subject { described_class.new }
 
+          before do
+            expect(::Mongo::Client).to receive(:new).with(
+                                         'mongodb://127.0.0.1:27017/salary_summary'
+                                       ).and_return mongodb_client
+
+            expect(subject).to receive(
+                                 :database_collection
+                               ).once.with('foo').and_return collection
+          end
+
+          context 'when sort options argument is empty' do
+            it 'calls find on collection using empty filter and returns entries' do
+              expect(collection).to receive(:find).once.with(
+                                      {}, { sort: {} }
+                                    ).and_return [{"foo" => "bar"}]
+
+              expect(subject.find_on('foo')).to eql([{ 'foo' => 'bar' }])
+            end
+
+            it 'calls find on collection using filter and returns entries' do
+              expect(collection).to receive(:find).once.with(
+                                      { '_id' => '123' }, { sort: {} }
+                                    ).and_return [{"foo" => "bar"}]
+
+              expect(
+                subject.find_on('foo', filter: { '_id' => '123' })
+              ).to eql [{"foo" => "bar"}]
+            end
+          end
+
+          context 'when sort options argument is present' do
+            it 'calls find on collection using empty filter and returns entries' do
+              expect(collection).to receive(:find).once.with(
+                                      {}, { sort: { foo: :asc } }
+                                    ).and_return [{"foo" => "bar"}]
+
+              expect(
+                subject.find_on('foo', sort: { foo: :asc })
+              ).to eql([{ 'foo' => 'bar' }])
+            end
+
+            it 'calls find on collection using filter and returns entries' do
+              expect(collection).to receive(:find).once.with(
+                                      { '_id' => '123' }, { sort: { foo: :asc } }
+                                    ).and_return [{"foo" => "bar"}]
+
+              expect(
+                subject.find_on('foo', filter: { '_id' => '123' }, sort: { foo: :asc })
+              ).to eql [{"foo" => "bar"}]
+            end
+          end
+        end
+
+        describe '#insert_on collection, document' do
+          subject { described_class.new }
+
+          before do
+            expect(::Mongo::Client).to receive(:new).with(
+                                         'mongodb://127.0.0.1:27017/salary_summary'
+                                       ).and_return mongodb_client
+
+            expect(subject).to receive(
+                                 :database_collection
+                               ).once.with('foo').and_return collection
+          end
+
+          it 'calls single document insertion on collection' do
+            expect(collection).to receive(:insert_one).once.with(
+                                    foo: 'bar', bar: 'bazz'
+                                  )
+
+            subject.insert_on('foo', foo: 'bar', bar: 'bazz')
+          end
+        end
+
+        describe '#aggregate_on collection, *stages' do
+          let(:aggregation_result) { double }
+
+          subject { described_class.new }
+
+          before do
+            expect(::Mongo::Client).to receive(:new).with(
+                                         'mongodb://127.0.0.1:27017/salary_summary'
+                                       ).and_return mongodb_client
+
+            expect(subject).to receive(
+                                 :database_collection
+                               ).once.with('foo').and_return collection
+          end
+
+          it 'calls aggregate pipeline method on collection, using stages arguments' do
+            expect(collection).to receive(:aggregate).once.with(
+                                    [
+                                      { :$group => { _id: 'Sum', sum: { :$sum => '$amount' } } }
+                                    ]
+                                  ).and_return aggregation_result
+
+            expect(
+              subject.aggregate_on(
+                'foo', { :$group => { _id: 'Sum', sum: { :$sum => '$amount' } } }
+              )
+            ).to eql aggregation_result
+          end
+        end
+
+        describe '#database_collection name' do
           before do
             expect(::Mongo::Client).to receive(:new).with(
                                          'mongodb://127.0.0.1:27017/salary_summary'
