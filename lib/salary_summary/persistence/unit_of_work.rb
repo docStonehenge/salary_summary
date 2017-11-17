@@ -2,8 +2,16 @@ module SalarySummary
   module Persistence
     class UnitOfWork
       # Sets a new instance of UnitOfWork as <tt>current_uow</tt> on running thread.
+      # If a current UnitOfWork is present, uses entity registry set on it; if not,
+      # initializes a UnitOfWork with a new EntityRegistry.
       def self.new_current
-        self.current = new(EntityRegistry.new)
+        self.current = new(
+          begin
+            current.clean_entities
+          rescue UnitOfWorkNotStartedError
+            EntityRegistry.new
+          end
+        )
       end
 
       # Sets an instance of UnitOfWork as <tt>current_uow</tt> on running thread.
@@ -18,6 +26,8 @@ module SalarySummary
           raise UnitOfWorkNotStartedError unless uow
         end
       end
+
+      attr_reader :clean_entities
 
       # Initializes an instance with three new Set objects and an EntityRegistry
       def initialize(entity_registry)

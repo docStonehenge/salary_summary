@@ -4,12 +4,45 @@ module SalarySummary
   module Persistence
     describe UnitOfWork do
       describe '.new_current uow' do
-        it 'registers a new UnitOfWork instance as current on running thread' do
-          described_class.new_current
+        context 'when there is a current UnitOfWork running' do
+          before do
+            described_class.current = subject
+            @registry = described_class.current.clean_entities
+          end
 
-          expect(
-            Thread.current.thread_variable_get(:current_uow)
-          ).to be_an_instance_of(described_class)
+          it 'registers a new UnitOfWork instance on running thread using existing registry' do
+            described_class.new_current
+
+            expect(
+              Thread.current.thread_variable_get(:current_uow)
+            ).to be_an_instance_of(described_class)
+
+            expect(described_class.current.clean_entities).to eql @registry
+          end
+        end
+
+        context "when no UnitOfWork is running on current Thread" do
+          before do
+            Thread.current.thread_variable_set(:current_uow, nil)
+
+            expect(
+              Thread.current.thread_variable_get(:current_uow)
+            ).to be_nil
+          end
+
+          it 'registers a new UnitOfWork instance on running thread using a new registry' do
+            new_registry = double(:entity_registry)
+
+            expect(EntityRegistry).to receive(:new).once.and_return new_registry
+
+            described_class.new_current
+
+            expect(
+              Thread.current.thread_variable_get(:current_uow)
+            ).to be_an_instance_of(described_class)
+
+            expect(described_class.current.clean_entities).to equal new_registry
+          end
         end
       end
 

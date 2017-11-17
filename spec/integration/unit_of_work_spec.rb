@@ -1,11 +1,9 @@
 require 'spec_helper'
 
 describe 'Persistence::UnitOfWork integration tests', integration: true do
-  subject do
-    SalarySummary::Persistence::UnitOfWork.new(
-      SalarySummary::Persistence::EntityRegistry.new
-    )
-  end
+  let(:entity_registry) { SalarySummary::Persistence::EntityRegistry.new }
+
+  subject { SalarySummary::Persistence::UnitOfWork.new(entity_registry) }
 
   before do
     Thread.current.thread_variable_set(:current_uow, nil)
@@ -30,6 +28,31 @@ describe 'Persistence::UnitOfWork integration tests', integration: true do
     expect {
       Thread.new { SalarySummary::Persistence::UnitOfWork.current }.join
     }.to raise_error(SalarySummary::Persistence::UnitOfWorkNotStartedError)
+  end
+
+  it 'uses same entity registry from existing uow on new one registered' do
+    SalarySummary::Persistence::UnitOfWork.current = subject
+    new_uow = SalarySummary::Persistence::UnitOfWork.new_current
+
+    expect(SalarySummary::Persistence::UnitOfWork.current).to equal new_uow
+    expect(new_uow.clean_entities).to equal entity_registry
+  end
+
+  it 'uses new entity registry on new UnitOfWork when no current_uow is set' do
+    expect {
+      SalarySummary::Persistence::UnitOfWork.current
+    }.to raise_error(SalarySummary::Persistence::UnitOfWorkNotStartedError)
+
+    new_registry = double(:entity_registry)
+
+    expect(
+      SalarySummary::Persistence::EntityRegistry
+    ).to receive(:new).once.and_return new_registry
+
+    new_uow = SalarySummary::Persistence::UnitOfWork.new_current
+
+    expect(SalarySummary::Persistence::UnitOfWork.current).to equal new_uow
+    expect(new_uow.clean_entities).to equal new_registry
   end
 
   context 'getting entity registered as clean' do
