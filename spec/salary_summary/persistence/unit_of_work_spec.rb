@@ -33,7 +33,7 @@ module SalarySummary
           it 'registers a new UnitOfWork instance on running thread using a new registry' do
             new_registry = double(:entity_registry)
 
-            expect(EntityRegistry).to receive(:new).once.and_return new_registry
+            expect(Entities::Registry).to receive(:new).once.and_return new_registry
 
             described_class.new_current
 
@@ -69,14 +69,14 @@ module SalarySummary
         end
       end
 
-      subject { described_class.new(EntityRegistry.new) }
+      subject { described_class.new(Entities::Registry.new) }
 
       let(:clean_entities) { subject.instance_variable_get(:@clean_entities) }
       let(:new_entities) { subject.instance_variable_get(:@new_entities) }
       let(:changed_entities) { subject.instance_variable_get(:@changed_entities) }
 
       describe '#get entity_class, entity_id' do
-        let(:entity) { Entities::Salary.new(id: BSON::ObjectId.new, amount: 1400.0, period: Date.parse('07/09/2017')) }
+        let(:entity) { SalarySummary::Entities::Salary.new(id: BSON::ObjectId.new, amount: 1400.0, period: Date.parse('07/09/2017')) }
 
         it 'returns the entity set on clean entities list' do
           clean_entities.add(entity)
@@ -89,7 +89,7 @@ module SalarySummary
       end
 
       describe '#register_clean entity' do
-        let(:entity) { Entities::Salary.new(id: BSON::ObjectId.new, amount: 1400.0, period: Date.parse('07/09/2017')) }
+        let(:entity) { SalarySummary::Entities::Salary.new(id: BSON::ObjectId.new, amount: 1400.0, period: Date.parse('07/09/2017')) }
 
         context "when clean_entities list doesn't contain entity yet" do
           it 'adds entity to clean_entities map' do
@@ -100,13 +100,13 @@ module SalarySummary
 
         context 'when clean_entities already contains entity' do
           it "doesn't add same database registry twice" do
-            another_entity = Entities::Salary.new(id: entity.id)
+            another_entity = SalarySummary::Entities::Salary.new(id: entity.id)
 
             subject.register_clean(entity)
             subject.register_clean(another_entity)
 
             expect(
-              clean_entities.get(Entities::Salary, another_entity.id)
+              clean_entities.get(SalarySummary::Entities::Salary, another_entity.id)
             ).not_to equal another_entity
           end
         end
@@ -278,12 +278,12 @@ module SalarySummary
           end
 
           it "removes from clean_entities before setting on removed_entities" do
-            entity = Entities::Salary.new(id: 123, amount: 1400.0, period: Date.parse('07/09/2017'))
+            entity = SalarySummary::Entities::Salary.new(id: 123, amount: 1400.0, period: Date.parse('07/09/2017'))
 
             subject.register_clean(entity)
             subject.register_removed(entity)
 
-            expect(clean_entities.get(Entities::Salary, 123)).to be_nil
+            expect(clean_entities.get(SalarySummary::Entities::Salary, 123)).to be_nil
             expect(removed_entities).to include entity
           end
         end

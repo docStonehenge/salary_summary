@@ -1,7 +1,7 @@
 require 'spec_helper'
 
 describe 'Persistence::UnitOfWork integration tests', integration: true do
-  let(:entity_registry) { SalarySummary::Persistence::EntityRegistry.new }
+  let(:entity_registry) { SalarySummary::Persistence::Entities::Registry.new }
 
   subject { SalarySummary::Persistence::UnitOfWork.new(entity_registry) }
 
@@ -46,7 +46,7 @@ describe 'Persistence::UnitOfWork integration tests', integration: true do
     new_registry = double(:entity_registry)
 
     expect(
-      SalarySummary::Persistence::EntityRegistry
+      SalarySummary::Persistence::Entities::Registry
     ).to receive(:new).once.and_return new_registry
 
     new_uow = SalarySummary::Persistence::UnitOfWork.new_current

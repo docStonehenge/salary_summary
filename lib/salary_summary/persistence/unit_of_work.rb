@@ -3,13 +3,13 @@ module SalarySummary
     class UnitOfWork
       # Sets a new instance of UnitOfWork as <tt>current_uow</tt> on running thread.
       # If a current UnitOfWork is present, uses entity registry set on it; if not,
-      # initializes a UnitOfWork with a new EntityRegistry.
+      # initializes a UnitOfWork with a new Entities::Registry.
       def self.new_current
         self.current = new(
           begin
             current.clean_entities
           rescue UnitOfWorkNotStartedError
-            EntityRegistry.new
+            Entities::Registry.new
           end
         )
       end
@@ -29,7 +29,7 @@ module SalarySummary
 
       attr_reader :clean_entities
 
-      # Initializes an instance with three new Set objects and an EntityRegistry
+      # Initializes an instance with three new Set objects and an Entities::Registry
       def initialize(entity_registry)
         @clean_entities   = entity_registry
         @new_entities     = Set.new
