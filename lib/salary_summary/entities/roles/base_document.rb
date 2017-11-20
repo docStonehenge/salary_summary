@@ -4,6 +4,11 @@ module SalarySummary
       module BaseDocument
         include Comparable
 
+        # Extends class-level behavior for entities, including document field definitions.
+        # Sets <tt>fields_list</tt> and <tt>fields</tt> class instance variables,
+        # to hold fields properties, with proper reader methods.
+        # Finally, defines <tt>id</tt> attribute, to hold primary key values for entity,
+        # aliasing to <tt>_id</tt>, according to MongoDB field with same name.
         def self.included(base)
           base.class_eval do
             extend(ClassMethods)
@@ -65,12 +70,18 @@ module SalarySummary
           end
         end
 
+        # Enables comparison with another entity object, using Comparable built-in behavior.
+        # It raises a ComparisonError if caller doesn't have an id yet set, or
+        # if the object to be compared to doesn't have an id.
         def <=>(other)
           raise ComparisonError if id.nil? or other.id.nil?
           id <=> other.id
         end
 
         module ClassMethods
+          # Returns the class name of the repository to handle persistence on entity.
+          # Should be overwritten by concrete Role mixin created for entity.
+          # Raises an NotImplementedError.
           def repository
             raise NotImplementedError
           end
