@@ -56,7 +56,7 @@ module SalarySummary
                               ).and_return [{ '_id' => '123', 'period' => Time.parse('2016-01-01'), 'amount' => 150.0 }]
 
             expect(Entities::Salary).to receive(:new).once.with(
-                                          id: '123', period: Date.parse('January, 2016'), amount: 150.0
+                                          '_id' => '123', 'period' => Time.parse('2016-01-01'), 'amount' => 150.0
                                         ).and_return salary
 
             expect(uow).to receive(:register_clean).once.with(salary).and_return salary
@@ -128,7 +128,7 @@ module SalarySummary
 
             it 'returns a set of Salary objects found on database' do
               expect(Entities::Salary).to receive(:new).once.with(
-                                            id: 1, period: Date.parse('January, 2016'), amount: 150.0
+                                            '_id' => 1, 'period' => Time.parse('2016-01-01'), 'amount' => 150.0
                                           ).and_return salary
 
               expect(uow).to receive(:register_clean).once.with(salary).and_return salary
@@ -156,11 +156,11 @@ module SalarySummary
 
             it 'returns all documents as Salary objects' do
               expect(Entities::Salary).to receive(:new).once.with(
-                                            id: 1, period: Date.parse('January, 2016'), amount: 150.0
+                                            { '_id' => 1, 'period' => Time.parse('2016-01-01'), 'amount' => 150.0 },
                                           ).and_return january
 
               expect(Entities::Salary).to receive(:new).once.with(
-                                            id: 2, period: Date.parse('February, 2016'), amount: 200.0
+                                            { '_id' => 2, 'period' => Time.parse('2016-02-01'), 'amount' => 200.0 }
                                           ).and_return february
 
               expect(uow).to receive(:register_clean).once.with(january).and_return january
@@ -187,11 +187,11 @@ module SalarySummary
 
             it 'returns all documents sorted as salaries' do
               expect(Entities::Salary).to receive(:new).once.with(
-                                            id: 2, period: Date.parse('January, 2016'), amount: 150.0
+                                            { '_id' => 2, 'period' => Time.parse('2016-01-01'), 'amount' => 150.0 },
                                           ).and_return january
 
               expect(Entities::Salary).to receive(:new).once.with(
-                                            id: 1, period: Date.parse('February, 2016'), amount: 200.0
+                                            { '_id' => 1, 'period' => Time.parse('2016-02-01'), 'amount' => 200.0 }
                                           ).and_return february
 
               expect(uow).to receive(:register_clean).once.with(january).and_return january
@@ -235,11 +235,11 @@ module SalarySummary
 
             it 'returns a set of Salary objects already loaded' do
               expect(Entities::Salary).not_to receive(:new).with(
-                                                id: 124, period: Date.parse('January, 2016'), amount: 150.0
+                                                { '_id' => 124, 'period' => Time.parse('2016-01-01'), 'amount' => 150.0 },
                                               )
 
               expect(Entities::Salary).to receive(:new).once.with(
-                                            id: 125, period: Date.parse('February, 2016'), amount: 150.0
+                                            { '_id' => 125, 'period' => Time.parse('2016-02-01'), 'amount' => 150.0 }
                                           ).and_return salary
 
               expect(uow).to receive(:register_clean).once.with(salary).and_return salary
@@ -255,20 +255,20 @@ module SalarySummary
               expect(client).to receive(:find_on).once.with(
                                   :salaries, filter: {}, sort: {}
                                 ).and_return(
-                                   [
-                                     { '_id' => 124, 'period' => Time.parse('2016-01-01'), 'amount' => 150.0 },
-                                     { '_id' => 125, 'period' => Time.parse('2016-02-01'), 'amount' => 200.0 }
-                                   ]
-                                 )
+                                  [
+                                    { '_id' => 124, 'period' => Time.parse('2016-01-01'), 'amount' => 150.0 },
+                                    { '_id' => 125, 'period' => Time.parse('2016-02-01'), 'amount' => 200.0 }
+                                  ]
+                                )
             end
 
             it 'returns all documents as Salary objects' do
               expect(Entities::Salary).not_to receive(:new).with(
-                                                id: 124, period: Date.parse('January, 2016'), amount: 150.0
+                                                { '_id' => 124, 'period' => Time.parse('2016-01-01'), 'amount' => 150.0 },
                                               )
 
               expect(Entities::Salary).to receive(:new).once.with(
-                                            id: 125, period: Date.parse('February, 2016'), amount: 200.0
+                                            { '_id' => 125, 'period' => Time.parse('2016-02-01'), 'amount' => 200.0 }
                                           ).and_return february
 
               expect(uow).to receive(:register_clean).once.with(february).and_return february
@@ -291,11 +291,11 @@ module SalarySummary
 
             it 'returns all documents sorted as salaries' do
               expect(Entities::Salary).not_to receive(:new).with(
-                                                id: 124, period: Date.parse('January, 2016'), amount: 150.0
+                                                { '_id' => 124, 'period' => Time.parse('2016-01-01'), 'amount' => 150.0 },
                                               )
 
               expect(Entities::Salary).to receive(:new).once.with(
-                                            id: 125, period: Date.parse('February, 2016'), amount: 200.0
+                                            { '_id' => 125, 'period' => Time.parse('2016-02-01'), 'amount' => 200.0 }
                                           ).and_return february
 
               expect(uow).to receive(:register_clean).once.with(february).and_return february

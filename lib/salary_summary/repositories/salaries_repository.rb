@@ -48,15 +48,7 @@ module SalarySummary
 
         entry = yield
 
-        Persistence::UnitOfWork.current.register_clean(new_entity_for(entry))
-      end
-
-      def new_entity_for(entry)
-        @object_klass.new(
-          id: entry['_id'],
-          period: entry['period'].to_date,
-          amount: entry['amount']
-        )
+        Persistence::UnitOfWork.current.register_clean(@object_klass.new(entry))
       end
 
       def sum_aggregation
