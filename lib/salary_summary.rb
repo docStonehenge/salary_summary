@@ -25,6 +25,7 @@ require 'salary_summary/persistence/unit_of_work'
 require 'salary_summary/persistence/entities/field'
 
 require 'salary_summary/repositories/registry'
+require 'salary_summary/repositories/base'
 require 'salary_summary/repositories/salaries_repository'
 
 require 'salary_summary/entities/roles/base_document'
