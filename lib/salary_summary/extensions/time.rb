@@ -1,7 +1,7 @@
 class Time
   def self.try_convert(value)
-    parse(value)
-  rescue ArgumentError, TypeError
+    parse(value.to_s)
+  rescue ArgumentError
     nil
   end
 end

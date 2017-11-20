@@ -278,12 +278,12 @@ module SalarySummary
           end
 
           it "removes from clean_entities before setting on removed_entities" do
-            entity = SalarySummary::Entities::Salary.new(id: 123, amount: 1400.0, period: Date.parse('07/09/2017'))
+            entity = SalarySummary::Entities::Salary.new(id: BSON::ObjectId.new, amount: 1400.0, period: Date.parse('07/09/2017'))
 
             subject.register_clean(entity)
             subject.register_removed(entity)
 
-            expect(clean_entities.get(SalarySummary::Entities::Salary, 123)).to be_nil
+            expect(clean_entities.get(SalarySummary::Entities::Salary, entity.id)).to be_nil
             expect(removed_entities).to include entity
           end
         end

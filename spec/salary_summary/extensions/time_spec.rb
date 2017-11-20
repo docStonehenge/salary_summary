@@ -5,6 +5,7 @@ describe 'Time class extension' do
     context 'when value is a valid date' do
       it 'returns Time object' do
         expect(Time.try_convert("2017/01/01")).to be_an_instance_of Time
+        expect(Time.try_convert(Time.now)).to be_an_instance_of Time
       end
     end
 

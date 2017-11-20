@@ -5,10 +5,12 @@ describe 'Date class extension' do
     context 'when value is a valid date' do
       it 'returns Date object' do
         expect(Date.try_convert("2017/01/01")).to be_an_instance_of Date
+        expect(Date.try_convert(Date.today)).to be_an_instance_of Date
       end
 
       it 'returns DateTime object' do
         expect(DateTime.try_convert("2017/01/01")).to be_an_instance_of DateTime
+        expect(DateTime.try_convert(DateTime.now)).to be_an_instance_of DateTime
 
         expect(
           DateTime.try_convert("2017/01/01 12:00:00")
