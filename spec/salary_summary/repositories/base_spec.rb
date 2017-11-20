@@ -307,6 +307,36 @@ module SalarySummary
         end
       end
 
+      describe '#insert entity' do
+        let(:entity_to_save) { Entities::Salary.new }
+
+        it 'saves an entry from entity instance on collection, based on its mapped fields' do
+          allow(entity_to_save).to receive(:to_hash).once.and_return(
+                             id: 1, amount: 200.0, period: Date.parse('1990/01/01')
+                           )
+
+          expect(client).to receive(:insert_on).once.with(
+                              :salaries,
+                              id: 1, amount: 200.0, period: Date.parse('1990/01/01')
+                            )
+
+          subject.insert entity_to_save
+        end
+
+        it "raises ArgumentError if entity isn't an instance of entity_klass" do
+          expect(entity).not_to receive(:to_hash)
+          expect(client).not_to receive(:insert_on).with(any_args)
+
+          expect {
+            subject.insert OpenStruct.new
+          }.to raise_error(
+                 ArgumentError,
+                 "Entity to be inserted must be of class set on repository as #entity_klass: SalarySummary::Entities::Salary. "\
+                 "This repository cannot operate on instances of OpenStruct."
+               )
+        end
+      end
+
       describe '#aggregate' do
         it 'calls aggregation pipeline on collection, allowing stage append on block' do
           expect(client).to receive(:aggregate_on).once.with(

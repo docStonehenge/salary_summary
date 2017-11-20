@@ -46,7 +46,7 @@ loop do
     salary = Interpreters::InformationInterpreter.new.parse(@information)
 
     if salary
-      @repository.save(salary)
+      @repository.insert(salary)
       puts "Saved correctly into the database: period: #{salary.month}/#{salary.year}, amount: #{salary.amount}"
     else
       puts "We found an error to save that salary, buddy. Please, try again."

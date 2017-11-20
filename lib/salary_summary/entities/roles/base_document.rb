@@ -78,6 +78,21 @@ module SalarySummary
           id <=> other.id
         end
 
+        # Returns a Hash of all fields from entity, mapping keys as Symbols of field names
+        # and their respective values.
+        # <tt>include_id_field</tt> argument indicates if the Hash returned must
+        # map the +id+ field or not.
+        def to_hash(include_id_field: true)
+          variables = instance_variables
+          variables.delete(:@id) unless include_id_field
+
+          {}.tap do |attrs|
+            variables.each do |ivar|
+              attrs[:"#{ivar.to_s.sub(/^@/, '')}"] = instance_variable_get(ivar)
+            end
+          end
+        end
+
         module ClassMethods
           # Returns the class name of the repository to handle persistence on entity.
           # Should be overwritten by concrete Role mixin created for entity.

@@ -1,6 +1,10 @@
 module SalarySummary
   module Repositories
     module Base
+      # Initializes an instance of repository, receiving a call to set new or fetch
+      # current connection from chosen database.
+      # Determines <tt>collection_name</tt> and <tt>entity_klass</tt> attributes
+      # based on repository classes that include this behavior.
       def initialize(client: Databases::MongoDB::Client.current_or_new_connection)
         @connection      = client
         @collection_name = collection_name
@@ -23,6 +27,17 @@ module SalarySummary
         get_entries(modifier, sorted_by).map do |entry|
           load_entity(entry.dig('_id')) { entry }
         end
+      end
+
+      def insert(entity)
+        unless entity.is_a? @entity_klass
+          raise ArgumentError,
+                "Entity to be inserted must be of class set on "\
+                "repository as #entity_klass: #{@entity_klass}. "\
+                "This repository cannot operate on instances of #{entity.class}."
+        end
+
+        @connection.insert_on(@collection_name, entity.to_hash)
       end
 
       def aggregate

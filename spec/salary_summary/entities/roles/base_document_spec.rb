@@ -217,81 +217,101 @@ module SalarySummary
 
               it 'raises comparison error on less than' do
                 expect {
-                  subject < described_class.new(id: id, amount: 200.0, period: Date.parse('January, 2016'))
+                  subject < described_class.new(id: id, first_name: 'John', dob: Date.parse('1990/01/01'))
                 }.to raise_error(ComparisonError, "Cannot compare with an entity that isn't persisted.")
               end
 
               it 'raises comparison error on greater than' do
                 expect {
-                  subject > described_class.new(id: id, amount: 200.0, period: Date.parse('January, 2016'))
+                  subject > described_class.new(id: id, first_name: 'John', dob: Date.parse('1990/01/01'))
                 }.to raise_error(ComparisonError, "Cannot compare with an entity that isn't persisted.")
               end
 
               it 'raises comparison error on less than or equal' do
                 expect {
-                  subject <= described_class.new(id: id, amount: 200.0, period: Date.parse('January, 2016'))
+                  subject <= described_class.new(id: id, first_name: 'John', dob: Date.parse('1990/01/01'))
                 }.to raise_error(ComparisonError, "Cannot compare with an entity that isn't persisted.")
               end
 
               it 'raises comparison error on greater than or equal' do
                 expect {
-                  subject >= described_class.new(id: id, amount: 200.0, period: Date.parse('January, 2016'))
+                  subject >= described_class.new(id: id, first_name: 'John', dob: Date.parse('1990/01/01'))
                 }.to raise_error(ComparisonError, "Cannot compare with an entity that isn't persisted.")
               end
             end
 
             context 'when other object has no id' do
               before do
-                @other_salary = described_class.new(
-                  amount: 200.0, period: Date.parse('January, 2016')
+                @other_entity = described_class.new(
+                  first_name: 'John', dob: Date.parse('1990/01/01')
                 )
               end
 
               it 'raises comparison error on less than' do
                 expect {
-                  subject < @other_salary
+                  subject < @other_entity
                 }.to raise_error(ComparisonError, "Cannot compare with an entity that isn't persisted.")
               end
 
               it 'raises comparison error on greater than' do
                 expect {
-                  subject > @other_salary
+                  subject > @other_entity
                 }.to raise_error(ComparisonError, "Cannot compare with an entity that isn't persisted.")
               end
 
               it 'raises comparison error on less than or equal' do
                 expect {
-                  subject <= @other_salary
+                  subject <= @other_entity
                 }.to raise_error(ComparisonError, "Cannot compare with an entity that isn't persisted.")
               end
 
               it 'raises comparison error on greater than or equal' do
                 expect {
-                  subject >= @other_salary
+                  subject >= @other_entity
                 }.to raise_error(ComparisonError, "Cannot compare with an entity that isn't persisted.")
               end
             end
 
-            it 'compares less than with other salary by id' do
+            it 'compares less than with other entity by id' do
               expect(
                 subject
-              ).to be < described_class.new(id: BSON::ObjectId.new, amount: 200.0, period: Date.parse('January, 2016'))
+              ).to be < described_class.new(id: BSON::ObjectId.new, first_name: 'John', dob: Date.parse('1990/01/01'))
             end
 
-            it 'compares greater than with other salary by id' do
-              another_salary = described_class.new(id: BSON::ObjectId.new, amount: 200.0, period: Date.parse('January, 2016'))
-              expect(subject).to be > another_salary
+            it 'compares greater than with other entity by id' do
+              another_entity = described_class.new(id: BSON::ObjectId.new, first_name: 'John', dob: Date.parse('1990/01/01'))
+              expect(subject).to be > another_entity
             end
 
-            it 'compares less than or equal to with other salary by id' do
+            it 'compares less than or equal to with other entity by id' do
               expect(
                 subject
-              ).to be <= described_class.new(id: BSON::ObjectId.new, amount: 200.0, period: Date.parse('January, 2016'))
+              ).to be <= described_class.new(id: BSON::ObjectId.new, first_name: 'John', dob: Date.parse('1990/01/01'))
             end
 
-            it 'compares greater than or equal to with other salary by id' do
-              another_salary = described_class.new(id: BSON::ObjectId.new, amount: 200.0, period: Date.parse('January, 2016'))
-              expect(subject).to be >= another_salary
+            it 'compares greater than or equal to with other entity by id' do
+              another_entity = described_class.new(id: BSON::ObjectId.new, first_name: 'John', dob: Date.parse('1990/01/01'))
+              expect(subject).to be >= another_entity
+            end
+          end
+
+          describe '#to_hash include_id_field: true' do
+            subject { described_class.new(id: id, first_name: 'John', dob: Date.parse('1990/01/01')) }
+
+            context 'when ID field is included' do
+              it 'returns fields names and values mapped into a Hash' do
+                expect(
+                  subject.to_hash
+                ).to eql(id: id, first_name: 'John', dob: Date.parse('1990/01/01'))
+              end
+            end
+
+            context 'when ID field is not included' do
+              it 'returns fields names and values mapped into a Hash, without ID' do
+                expect(
+                  subject.to_hash(include_id_field: false)
+                ).to eql(first_name: 'John', dob: Date.parse('1990/01/01'))
+              end
             end
           end
         end

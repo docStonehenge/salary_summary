@@ -16,17 +16,6 @@ module SalarySummary
         end
       end
 
-      describe '#save salary' do
-        it 'saves a salary instance on salaries collection' do
-          expect(client).to receive(:insert_on).once.with(
-                              :salaries,
-                              period: Date.parse('01/2016'), amount: 150.0
-                            )
-
-          subject.save salary
-        end
-      end
-
       describe '#sum_by_amount' do
         it 'returns a document with the sum of all entries on the collection' do
           allow(client).to receive(:aggregate_on).once.with(

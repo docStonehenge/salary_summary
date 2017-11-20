@@ -3,12 +3,6 @@ module SalarySummary
     class SalariesRepository
       include Base
 
-      def save(salary)
-        @connection.insert_on(
-          @collection_name, period: salary.period, amount: salary.amount
-        )
-      end
-
       def sum_by_amount
         aggregation = sum_aggregation
         aggregation.empty? ? 0 : aggregation.first.dig('sum')
