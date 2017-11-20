@@ -27,6 +27,8 @@ require 'salary_summary/persistence/entities/field'
 require 'salary_summary/repositories/registry'
 require 'salary_summary/repositories/salaries_repository'
 
+require 'salary_summary/entities/roles/base_document'
+require 'salary_summary/entities/roles/salary_document'
 require 'salary_summary/entities/comparison_error'
 require 'salary_summary/entities/salary'
 
