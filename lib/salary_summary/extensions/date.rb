@@ -4,4 +4,8 @@ class Date
   rescue ArgumentError
     nil
   end
+
+  def to_mongo_value
+    self
+  end
 end

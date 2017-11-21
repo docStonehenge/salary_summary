@@ -22,4 +22,10 @@ describe 'Float class extension' do
       end
     end
   end
+
+  describe '#to_mongo_value' do
+    it 'returns itself' do
+      expect(100.0.to_mongo_value).to eql 100.0
+    end
+  end
 end

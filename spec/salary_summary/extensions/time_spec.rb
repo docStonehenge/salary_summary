@@ -23,4 +23,11 @@ describe 'Time class extension' do
       end
     end
   end
+
+  describe '#to_mongo_value' do
+    it 'returns itself' do
+      value = Time.now
+      expect(value.to_mongo_value).to eql value
+    end
+  end
 end

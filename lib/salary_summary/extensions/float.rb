@@ -8,4 +8,8 @@ class Float
   rescue ArgumentError, TypeError
     nil
   end
+
+  def to_mongo_value
+    self
+  end
 end

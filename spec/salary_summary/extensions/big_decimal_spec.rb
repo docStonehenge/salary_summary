@@ -20,4 +20,12 @@ describe 'BigDecimal extension' do
       end
     end
   end
+
+  describe '#to_mongo_value' do
+    it 'returns string value from BigDecimal value' do
+      value = BigDecimal.new("459.99")
+
+      expect(value.to_mongo_value).to eql value.to_s
+    end
+  end
 end

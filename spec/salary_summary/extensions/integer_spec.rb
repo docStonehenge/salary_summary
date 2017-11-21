@@ -22,4 +22,10 @@ describe 'Integer class extension' do
       end
     end
   end
+
+  describe '#to_mongo_value' do
+    it 'returns itself' do
+      expect(1.to_mongo_value).to eql 1
+    end
+  end
 end

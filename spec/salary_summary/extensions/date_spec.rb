@@ -36,4 +36,14 @@ describe 'Date class extension' do
       end
     end
   end
+
+  describe '#to_mongo_value' do
+    it 'returns itself' do
+      date_value = Date.today
+      expect(date_value.to_mongo_value).to eql date_value
+
+      datetime_value = DateTime.new
+      expect(datetime_value.to_mongo_value).to eql datetime_value
+    end
+  end
 end

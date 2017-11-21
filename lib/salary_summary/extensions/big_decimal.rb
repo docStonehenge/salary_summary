@@ -4,4 +4,8 @@ class BigDecimal
   rescue TypeError
     nil
   end
+
+  def to_mongo_value
+    to_s
+  end
 end

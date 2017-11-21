@@ -23,4 +23,11 @@ describe 'BSON::ObjectId extension' do
       end
     end
   end
+
+  describe '#to_mongo_value' do
+    it 'returns itself' do
+      value = BSON::ObjectId.new
+      expect(value.to_mongo_value).to eql value
+    end
+  end
 end
