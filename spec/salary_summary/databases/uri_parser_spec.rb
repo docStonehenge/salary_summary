@@ -7,7 +7,7 @@ module SalarySummary
         it 'returns correct URI after reading properties from yml file' do
           expect(
             described_class.parse_based_on_file
-          ).to eql 'mongodb://127.0.0.1:27017/salary_summary'
+          ).to eql 'mongodb://127.0.0.1:27017/salary_summary_test'
         end
 
         it 'raises ConnectionPropertiesError if cannot read properties file' do

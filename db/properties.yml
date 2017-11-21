@@ -1,7 +1,11 @@
 environments:
   development: &default
-    protocol: <%= ENV['PROTOCOL'] %>
-    host: <%= ENV['HOST'] %>
-    port: <%= ENV['PORT'] %>
+    protocol: &default_protocol <%= ENV['PROTOCOL'] %>
+    host: &default_host <%= ENV['HOST'] %>
+    port: &default_port <%= ENV['PORT'] %>
     database: salary_summary
-  test: *default
+  test:
+    protocol: *default_protocol
+    host: *default_host
+    port: *default_port
+    database: salary_summary_test

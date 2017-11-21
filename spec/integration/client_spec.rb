@@ -43,7 +43,7 @@ describe 'Databases::MongoDB::Client integration tests', integration: true do
     end
 
     it 'connects correctly to database using properties file' do
-      expect(subject.db_client.database.name).to eql 'salary_summary'
+      expect(subject.db_client.database.name).to eql 'salary_summary_test'
     end
   end
 

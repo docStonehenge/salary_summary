@@ -105,7 +105,7 @@ module SalarySummary
 
           before do
             expect(::Mongo::Client).to receive(:new).with(
-                                         'mongodb://127.0.0.1:27017/salary_summary'
+                                         'mongodb://127.0.0.1:27017/salary_summary_test'
                                        ).and_return mongodb_client
 
             expect(subject).to receive(
@@ -161,7 +161,7 @@ module SalarySummary
 
           before do
             expect(::Mongo::Client).to receive(:new).with(
-                                         'mongodb://127.0.0.1:27017/salary_summary'
+                                         'mongodb://127.0.0.1:27017/salary_summary_test'
                                        ).and_return mongodb_client
 
             expect(subject).to receive(
@@ -185,7 +185,7 @@ module SalarySummary
 
           before do
             expect(::Mongo::Client).to receive(:new).with(
-                                         'mongodb://127.0.0.1:27017/salary_summary'
+                                         'mongodb://127.0.0.1:27017/salary_summary_test'
                                        ).and_return mongodb_client
 
             expect(subject).to receive(
@@ -211,7 +211,7 @@ module SalarySummary
         describe '#database_collection name' do
           before do
             expect(::Mongo::Client).to receive(:new).with(
-                                         'mongodb://127.0.0.1:27017/salary_summary'
+                                         'mongodb://127.0.0.1:27017/salary_summary_test'
                                        ).and_return mongodb_client
           end
 

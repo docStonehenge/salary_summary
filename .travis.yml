@@ -4,7 +4,7 @@ env:
     - PROTOCOL=mongodb
     - HOST="127.0.0.1"
     - PORT=27017
-    - DATABASE="salary_summary"
+    - DATABASE="salary_summary_test"
 language: ruby
 rvm:
   - 2.3.1
