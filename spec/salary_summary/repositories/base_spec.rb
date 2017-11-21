@@ -311,20 +311,20 @@ module SalarySummary
         let(:entity_to_save) { Entities::Salary.new }
 
         it 'saves an entry from entity instance on collection, based on its mapped fields' do
-          allow(entity_to_save).to receive(:to_hash).once.and_return(
-                             id: 1, amount: 200.0, period: Date.parse('1990/01/01')
+          allow(entity_to_save).to receive(:to_mongo_document).once.and_return(
+                             _id: 1, amount: 200.0, period: Date.parse('1990/01/01')
                            )
 
           expect(client).to receive(:insert_on).once.with(
                               :salaries,
-                              id: 1, amount: 200.0, period: Date.parse('1990/01/01')
+                              _id: 1, amount: 200.0, period: Date.parse('1990/01/01')
                             )
 
           subject.insert entity_to_save
         end
 
         it "raises ArgumentError if entity isn't an instance of entity_klass" do
-          expect(entity).not_to receive(:to_hash)
+          expect(entity).not_to receive(:to_mongo_document)
           expect(client).not_to receive(:insert_on).with(any_args)
 
           expect {

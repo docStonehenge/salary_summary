@@ -37,7 +37,7 @@ module SalarySummary
                 "This repository cannot operate on instances of #{entity.class}."
         end
 
-        @connection.insert_on(@collection_name, entity.to_hash)
+        @connection.insert_on(@collection_name, entity.to_mongo_document)
       end
 
       def aggregate
@@ -47,7 +47,9 @@ module SalarySummary
       private
 
       def get_entries(filter, sorted_by)
-        @connection.find_on(@collection_name, filter: filter, sort: sorted_by)
+        @connection.find_on(
+          @collection_name, filter: filter.to_mongo_value, sort: sorted_by
+        )
       end
 
       def load_entity(id)
