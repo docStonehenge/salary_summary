@@ -1,14 +1,14 @@
 require 'spec_helper'
 
 module SalarySummary
-  module Entities
-    module Roles
-      describe BaseDocument do
+  module Persistence
+    module DocumentDefinitions
+      describe Base do
         let(:uow) { double(:uow) }
         let!(:id) { BSON::ObjectId.new }
 
         describe 'ClassMethods' do
-          subject { Class.new { include BaseDocument } }
+          subject { Class.new { include Base } }
 
           it 'defines ID field' do
             expect(subject.new).to have_id_defined
@@ -41,7 +41,7 @@ module SalarySummary
                   expect(Persistence::UnitOfWork).not_to receive(:current)
 
                   expect(
-                    Persistence::Entities::Field
+                    Entities::Field
                   ).to receive(:new).once.with(
                          type: BSON::ObjectId, value: id
                        ).and_return field
@@ -68,7 +68,7 @@ module SalarySummary
                                      ).once.with("foo=").and_yield value
 
                   expect(
-                    Persistence::Entities::Field
+                    Entities::Field
                   ).to receive(:new).once.with(
                          type: Integer, value: value
                        ).and_return field
@@ -109,7 +109,7 @@ module SalarySummary
 
         describe 'InstanceMethods' do
           class TestEntity
-            include BaseDocument
+            include Base
 
             define_field :first_name, type: String
             define_field :dob,        type: Date
@@ -218,25 +218,33 @@ module SalarySummary
               it 'raises comparison error on less than' do
                 expect {
                   subject < described_class.new(id: id, first_name: 'John', dob: Date.parse('1990/01/01'))
-                }.to raise_error(ComparisonError, "Cannot compare with an entity that isn't persisted.")
+                }.to raise_error(
+                       SalarySummary::Entities::ComparisonError, "Cannot compare with an entity that isn't persisted."
+                     )
               end
 
               it 'raises comparison error on greater than' do
                 expect {
                   subject > described_class.new(id: id, first_name: 'John', dob: Date.parse('1990/01/01'))
-                }.to raise_error(ComparisonError, "Cannot compare with an entity that isn't persisted.")
+                }.to raise_error(
+                       SalarySummary::Entities::ComparisonError, "Cannot compare with an entity that isn't persisted."
+                     )
               end
 
               it 'raises comparison error on less than or equal' do
                 expect {
                   subject <= described_class.new(id: id, first_name: 'John', dob: Date.parse('1990/01/01'))
-                }.to raise_error(ComparisonError, "Cannot compare with an entity that isn't persisted.")
+                }.to raise_error(
+                       SalarySummary::Entities::ComparisonError, "Cannot compare with an entity that isn't persisted."
+                     )
               end
 
               it 'raises comparison error on greater than or equal' do
                 expect {
                   subject >= described_class.new(id: id, first_name: 'John', dob: Date.parse('1990/01/01'))
-                }.to raise_error(ComparisonError, "Cannot compare with an entity that isn't persisted.")
+                }.to raise_error(
+                       SalarySummary::Entities::ComparisonError, "Cannot compare with an entity that isn't persisted."
+                     )
               end
             end
 
@@ -250,25 +258,33 @@ module SalarySummary
               it 'raises comparison error on less than' do
                 expect {
                   subject < @other_entity
-                }.to raise_error(ComparisonError, "Cannot compare with an entity that isn't persisted.")
+                }.to raise_error(
+                       SalarySummary::Entities::ComparisonError, "Cannot compare with an entity that isn't persisted."
+                     )
               end
 
               it 'raises comparison error on greater than' do
                 expect {
                   subject > @other_entity
-                }.to raise_error(ComparisonError, "Cannot compare with an entity that isn't persisted.")
+                }.to raise_error(
+                       SalarySummary::Entities::ComparisonError, "Cannot compare with an entity that isn't persisted."
+                     )
               end
 
               it 'raises comparison error on less than or equal' do
                 expect {
                   subject <= @other_entity
-                }.to raise_error(ComparisonError, "Cannot compare with an entity that isn't persisted.")
+                }.to raise_error(
+                       SalarySummary::Entities::ComparisonError, "Cannot compare with an entity that isn't persisted."
+                     )
               end
 
               it 'raises comparison error on greater than or equal' do
                 expect {
                   subject >= @other_entity
-                }.to raise_error(ComparisonError, "Cannot compare with an entity that isn't persisted.")
+                }.to raise_error(
+                       SalarySummary::Entities::ComparisonError, "Cannot compare with an entity that isn't persisted."
+                     )
               end
             end
 
@@ -312,6 +328,60 @@ module SalarySummary
                   subject.to_hash(include_id_field: false)
                 ).to eql(first_name: 'John', dob: Date.parse('1990/01/01'))
               end
+            end
+          end
+
+          describe '#to_mongo_document' do
+            class EntityWithAllValues
+              include Base
+
+              define_field :field1, type: String
+              define_field :field2, type: Integer
+              define_field :field3, type: Float
+              define_field :field4, type: BigDecimal
+              define_field :field5, type: SalarySummary::Boolean
+              define_field :field6, type: Array
+              define_field :field7, type: Hash
+              define_field :field8, type: BSON::ObjectId
+              define_field :field9, type: Date
+              define_field :field10, type: DateTime
+              define_field :field11, type: Time
+            end
+
+            subject do
+              EntityWithAllValues.new(
+                id: id,
+                field1: "Foo",
+                field2: 123,
+                field3: 123.0,
+                field4: BigDecimal.new("123.0"),
+                field5: true,
+                field6: [123, BigDecimal.new("200")],
+                field7: { foo: Date.parse("01/01/1990"), 'bazz' => BigDecimal.new(400) },
+                field8: id,
+                field9: Date.parse('01/01/1990'),
+                field10: DateTime.new(2017, 11, 21),
+                field11: Time.new(2017, 11, 21)
+              )
+            end
+
+            it "maps fields names and values, with mongo permitted values and '_id' field" do
+              expect(
+                subject.to_mongo_document
+              ).to eql(
+                     _id: id,
+                     field1: "Foo",
+                     field2: 123,
+                     field3: 123.0,
+                     field4: "0.123E3",
+                     field5: true,
+                     field6: [123, "0.2E3"],
+                     field7: { foo: Date.parse("01/01/1990"), 'bazz' => '0.4E3' },
+                     field8: id,
+                     field9: Date.parse('01/01/1990'),
+                     field10: DateTime.new(2017, 11, 21),
+                     field11: Time.new(2017, 11, 21)
+                   )
             end
           end
         end

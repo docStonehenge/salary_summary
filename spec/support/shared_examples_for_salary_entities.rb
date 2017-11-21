@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-shared_examples_for 'a Salary entity with document role' do
+shared_examples_for 'a Salary entity as a document' do
   it '.repository' do
     expect(
       described_class.repository

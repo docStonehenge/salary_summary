@@ -28,14 +28,14 @@ require 'salary_summary/databases/mongo_db/client'
 require 'salary_summary/persistence/entities/registry'
 require 'salary_summary/persistence/unit_of_work_not_started_error'
 require 'salary_summary/persistence/unit_of_work'
+require 'salary_summary/persistence/document_definitions/base'
+require 'salary_summary/persistence/document_definitions/salary'
 require 'salary_summary/persistence/entities/field'
 
 require 'salary_summary/repositories/registry'
 require 'salary_summary/repositories/base'
 require 'salary_summary/repositories/salaries_repository'
 
-require 'salary_summary/entities/roles/base_document'
-require 'salary_summary/entities/roles/salary_document'
 require 'salary_summary/entities/comparison_error'
 require 'salary_summary/entities/salary'
 

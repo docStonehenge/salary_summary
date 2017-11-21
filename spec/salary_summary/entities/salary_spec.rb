@@ -5,7 +5,7 @@ module SalarySummary
     describe Salary do
       let(:id) { BSON::ObjectId.new }
 
-      it_behaves_like 'a Salary entity with document role'
+      it_behaves_like 'a Salary entity as a document'
 
       subject { described_class.new(id: id, amount: 200.0, period: Date.parse('January, 2016')) }
 

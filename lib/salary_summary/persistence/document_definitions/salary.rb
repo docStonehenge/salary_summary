@@ -1,10 +1,10 @@
 module SalarySummary
-  module Entities
-    module Roles
-      module SalaryDocument
-        def self.included(base)
-          base.class_eval do
-            include(BaseDocument)
+  module Persistence
+    module DocumentDefinitions
+      module Salary
+        def self.included(klass)
+          klass.class_eval do
+            include(Base)
             extend(ClassMethods)
 
             define_field :amount, type: BigDecimal

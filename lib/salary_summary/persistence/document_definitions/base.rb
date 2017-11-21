@@ -1,7 +1,7 @@
 module SalarySummary
-  module Entities
-    module Roles
-      module BaseDocument
+  module Persistence
+    module DocumentDefinitions
+      module Base
         include Comparable
 
         # Extends class-level behavior for entities, including document field definitions.
@@ -20,9 +20,9 @@ module SalarySummary
             alias_method :_id, :id
             alias_method :_id=, :id=
 
-            class << self
-              attr_reader :fields_list, :fields
-            end
+                         class << self
+                           attr_reader :fields_list, :fields
+                         end
           end
         end
 
@@ -63,7 +63,7 @@ module SalarySummary
           self.class.fields.each do |name, spec|
             instance_variable_set(
               :"@#{name}",
-              Persistence::Entities::Field.new(
+              Entities::Field.new(
                 type: spec.dig(:type), value: attributes.dig(name)
               ).coerce
             )
@@ -74,7 +74,10 @@ module SalarySummary
         # It raises a ComparisonError if caller doesn't have an id yet set, or
         # if the object to be compared to doesn't have an id.
         def <=>(other)
-          raise ComparisonError if id.nil? or other.id.nil?
+          if id.nil? or other.id.nil?
+            raise SalarySummary::Entities::ComparisonError
+          end
+
           id <=> other.id
         end
 
@@ -93,9 +96,19 @@ module SalarySummary
           end
         end
 
+        # Returns a Hash of all fields from entity, mapping keys as Symbols of field names
+        # and their respective values converted to MongoDB friendly values.
+        # Has an +_id+ field to already match a document-like structure for insertions or queries.
+        def to_mongo_document
+          document = to_hash
+          id_field = document.delete(:id)
+
+          document.merge!(_id: id_field).to_mongo_value
+        end
+
         module ClassMethods
           # Returns the class name of the repository to handle persistence on entity.
-          # Should be overwritten by concrete Role mixin created for entity.
+          # Should be overwritten by concrete DocumentDefinitions mixin created for entity.
           # Raises an NotImplementedError.
           def repository
             raise NotImplementedError
@@ -139,7 +152,7 @@ module SalarySummary
               define_method("#{attribute}=") do |value|
                 instance_variable_set(
                   :"@#{attribute}",
-                  Persistence::Entities::Field.new(type: type, value: value).coerce
+                  Entities::Field.new(type: type, value: value).coerce
                 )
 
                 unless attribute == :id
