@@ -30,14 +30,22 @@ module SalarySummary
       end
 
       def insert(entity)
-        unless entity.is_a? @entity_klass
-          raise ArgumentError,
-                "Entity to be inserted must be of class set on "\
-                "repository as #entity_klass: #{@entity_klass}. "\
-                "This repository cannot operate on instances of #{entity.class}."
-        end
-
+        validate_class_on entity
         @connection.insert_on(@collection_name, entity.to_mongo_document)
+      end
+
+      def update(entity)
+        validate_class_on entity
+
+        @connection.update_on(
+          @collection_name, { _id: entity.id },
+          '$set' => entity.to_mongo_document(include_id_field: false)
+        )
+      end
+
+      def delete(entity)
+        validate_class_on entity
+        @connection.delete_from(@collection_name, _id: entity.id)
       end
 
       def aggregate
@@ -46,13 +54,13 @@ module SalarySummary
 
       private
 
-      def get_entries(filter, sorted_by)
+      def get_entries(filter, sorted_by) # :nodoc:
         @connection.find_on(
           @collection_name, filter: filter.to_mongo_value, sort: sorted_by
         )
       end
 
-      def load_entity(id)
+      def load_entity(id) # :nodoc:
         if (loaded_entity = Persistence::UnitOfWork.current.get(@entity_klass, id))
           return loaded_entity
         end
@@ -60,6 +68,14 @@ module SalarySummary
         entry = yield
 
         Persistence::UnitOfWork.current.register_clean(@entity_klass.new(entry))
+      end
+
+      def validate_class_on(entity) # :nodoc:
+        return if entity.is_a? @entity_klass
+
+        raise ArgumentError,
+              "Entity must be of class: #{@entity_klass}. "\
+              "This repository cannot operate on #{entity.class} entities."
       end
     end
   end

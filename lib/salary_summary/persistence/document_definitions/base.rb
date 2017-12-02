@@ -33,26 +33,26 @@ module SalarySummary
         #
         # Examples
         #
-        # Entity.new
-        # #=> #<Entity:0x007fe9232bd0e0 @id=nil, @first_name=nil>
+        #   Entity.new
+        #   #=> #<Entity:0x007fe9232bd0e0 @id=nil, @first_name=nil>
         #
-        # Entity.new(first_name: "John Doe")
-        # #=> #<Entity:0x007fe9232bd0e0 @id=nil, @first_name="John Doe">
-        #
-        #
-        # Can initialize with 'id' attribute as 'id' or '_id':
-        #
-        # Entity.new(id: BSON::ObjectId.new)
-        # #=> #<Entity:0x007fe9232bd0e0 @id=BSON::ObjectId('5a1246d46582e8676af472c7'), @first_name=nil>
-        #
-        # Entity.new(_id: BSON::ObjectId.new)
-        # #=> #<Entity:0x007fe9232bd0e0 @id=BSON::ObjectId('5a1246d46582e8676af472c7'), @first_name=nil>
+        #   Entity.new(first_name: "John Doe")
+        #   #=> #<Entity:0x007fe9232bd0e0 @id=nil, @first_name="John Doe">
         #
         #
-        # Any argument that isn't resolved as a field on entity, will be ignored.
+        #   # Can initialize with 'id' attribute as 'id' or '_id':
         #
-        # Entity.new(foo: 1234)
-        # #=> #<Entity:0x007fe9232bd0e0 @id=nil, @first_name=nil>
+        #   Entity.new(id: BSON::ObjectId.new)
+        #   #=> #<Entity:0x007fe9232bd0e0 @id=BSON::ObjectId('5a1246d46582e8676af472c7'), @first_name=nil>
+        #
+        #   Entity.new(_id: BSON::ObjectId.new)
+        #   #=> #<Entity:0x007fe9232bd0e0 @id=BSON::ObjectId('5a1246d46582e8676af472c7'), @first_name=nil>
+        #
+        #
+        #   # Any argument that isn't resolved as a field on entity, will be ignored.
+        #
+        #   Entity.new(foo: 1234)
+        #   #=> #<Entity:0x007fe9232bd0e0 @id=nil, @first_name=nil>
         def initialize(attributes = {})
           attributes = attributes.each_with_object({}) do |(name, value), attrs|
             attrs[name.to_sym] = value
@@ -98,12 +98,17 @@ module SalarySummary
 
         # Returns a Hash of all fields from entity, mapping keys as Symbols of field names
         # and their respective values converted to MongoDB friendly values.
-        # Has an +_id+ field to already match a document-like structure for insertions or queries.
-        def to_mongo_document
-          document = to_hash
-          id_field = document.delete(:id)
+        # <tt>include_id_field</tt> argument indicated if +_id+ field must
+        # be present on document-like structure returned, for insertions or queries.
+        def to_mongo_document(include_id_field: true)
+          document = to_hash(include_id_field: include_id_field)
 
-          document.merge!(_id: id_field).to_mongo_value
+          if include_id_field
+            id_field = document.delete(:id)
+            document[:_id] = id_field
+          end
+
+          document.to_mongo_value
         end
 
         module ClassMethods

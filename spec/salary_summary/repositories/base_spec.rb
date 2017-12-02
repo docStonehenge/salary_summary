@@ -331,8 +331,67 @@ module SalarySummary
             subject.insert OpenStruct.new
           }.to raise_error(
                  ArgumentError,
-                 "Entity to be inserted must be of class set on repository as #entity_klass: SalarySummary::Entities::Salary. "\
-                 "This repository cannot operate on instances of OpenStruct."
+                 "Entity must be of class: SalarySummary::Entities::Salary. "\
+                 "This repository cannot operate on OpenStruct entities."
+               )
+        end
+      end
+
+      describe '#update entity' do
+        let(:entity_to_save) { Entities::Salary.new }
+
+        it 'calls document update on collection, using entity id as identifier' do
+          allow(entity_to_save).to receive(:id).and_return '123'
+
+          expect(entity_to_save).to receive(
+                                      :to_mongo_document
+                                    ).once.with(include_id_field: false).and_return(
+                                      amount: 200.0, period: Date.parse('1990/01/01')
+                                    )
+
+          expect(client).to receive(:update_on).once.with(
+                              :salaries,
+                              { _id: '123' },
+                              { '$set' => { amount: 200.0, period: Date.parse('1990/01/01') } }
+                            )
+
+          subject.update entity_to_save
+        end
+
+        it "raises ArgumentError if entity isn't an instance of entity_klass" do
+          expect(entity).not_to receive(:to_mongo_document).with(any_args)
+          expect(client).not_to receive(:update_on).with(any_args)
+
+          expect {
+            subject.update OpenStruct.new
+          }.to raise_error(
+                 ArgumentError,
+                 "Entity must be of class: SalarySummary::Entities::Salary. "\
+                 "This repository cannot operate on OpenStruct entities."
+               )
+        end
+      end
+
+      describe '#delete entity' do
+        let(:entity_to_save) { Entities::Salary.new }
+
+        it 'calls document delete on collection, using entity id as identifier' do
+          allow(entity_to_save).to receive(:id).and_return '123'
+
+          expect(client).to receive(:delete_from).once.with(:salaries, _id: '123')
+
+          subject.delete entity_to_save
+        end
+
+        it "raises ArgumentError if entity isn't an instance of entity_klass" do
+          expect(client).not_to receive(:delete_from).with(any_args)
+
+          expect {
+            subject.delete OpenStruct.new
+          }.to raise_error(
+                 ArgumentError,
+                 "Entity must be of class: SalarySummary::Entities::Salary. "\
+                 "This repository cannot operate on OpenStruct entities."
                )
         end
       end

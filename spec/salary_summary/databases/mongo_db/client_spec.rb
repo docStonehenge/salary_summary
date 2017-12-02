@@ -101,8 +101,6 @@ module SalarySummary
         end
 
         describe '#find_on collection, filter: {}, sort: {}' do
-          subject { described_class.new }
-
           before do
             expect(::Mongo::Client).to receive(:new).with(
                                          'mongodb://127.0.0.1:27017/salary_summary_test'
@@ -157,8 +155,6 @@ module SalarySummary
         end
 
         describe '#insert_on collection, document' do
-          subject { described_class.new }
-
           before do
             expect(::Mongo::Client).to receive(:new).with(
                                          'mongodb://127.0.0.1:27017/salary_summary_test'
@@ -178,10 +174,46 @@ module SalarySummary
           end
         end
 
+        describe '#update_on collection, identifier, document' do
+          before do
+            expect(::Mongo::Client).to receive(:new).with(
+                                         'mongodb://127.0.0.1:27017/salary_summary_test'
+                                       ).and_return mongodb_client
+
+            expect(subject).to receive(
+                                 :database_collection
+                               ).once.with('foo').and_return collection
+          end
+
+          it 'calls single document update, using identifier to fetch on collection' do
+            expect(collection).to receive(:update_one).once.with(
+                                    { name: 'Foo' }, { field: '2' }
+                                  )
+
+            subject.update_on('foo', { name: 'Foo' }, { field: '2' })
+          end
+        end
+
+        describe '#delete_from collection, identifier' do
+          before do
+            expect(::Mongo::Client).to receive(:new).with(
+                                         'mongodb://127.0.0.1:27017/salary_summary_test'
+                                       ).and_return mongodb_client
+
+            expect(subject).to receive(
+                                 :database_collection
+                               ).once.with('foo').and_return collection
+          end
+
+          it 'calls single document delete using identifier to find it' do
+            expect(collection).to receive(:delete_one).once.with({ name: 'Foo' })
+
+            subject.delete_from('foo', { name: 'Foo' })
+          end
+        end
+
         describe '#aggregate_on collection, *stages' do
           let(:aggregation_result) { double }
-
-          subject { described_class.new }
 
           before do
             expect(::Mongo::Client).to receive(:new).with(
@@ -216,8 +248,6 @@ module SalarySummary
           end
 
           it 'returns collection based on name, fetched as key from db connection' do
-            subject = described_class.new
-
             expect(subject.db_client).to receive(:[]).once.with(:foo).and_return collection
 
             expect(

@@ -60,6 +60,20 @@ module SalarySummary
           database_collection(collection).insert_one(document)
         end
 
+        # Updates document into named collection, finding by <tt>identifier</tt>.
+        # Returns a Mongo::Operation::Result object indicating the number of documents modified,
+        # with acknowledgement.
+        def update_on(collection, identifier, document)
+          database_collection(collection).update_one(identifier, document)
+        end
+
+        # Removes document found by <tt>identifier</tt> from named collection.
+        # Returns a Mongo::Operation::Result object indicating the number of documents removed,
+        # with acknowledgement.
+        def delete_from(collection, identifier)
+          database_collection(collection).delete_one(identifier)
+        end
+
         # Calls the aggregation pipeline into collection, receiving splatted stages
         # as arguments.
         # Returns a Mongo::Collection::View::Aggregation object.

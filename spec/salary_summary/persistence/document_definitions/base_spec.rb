@@ -383,6 +383,24 @@ module SalarySummary
                      field11: Time.new(2017, 11, 21)
                    )
             end
+
+            it "maps fields names and values, with mongo permitted values, without '_id' field" do
+              expect(
+                subject.to_mongo_document(include_id_field: false)
+              ).to eql(
+                     field1: "Foo",
+                     field2: 123,
+                     field3: 123.0,
+                     field4: "0.123E3",
+                     field5: true,
+                     field6: [123, "0.2E3"],
+                     field7: { foo: Date.parse("01/01/1990"), 'bazz' => '0.4E3' },
+                     field8: id,
+                     field9: Date.parse('01/01/1990'),
+                     field10: DateTime.new(2017, 11, 21),
+                     field11: Time.new(2017, 11, 21)
+                   )
+            end
           end
         end
       end
