@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe 'Persistence::UnitOfWork integration tests', integration: true do
+describe 'Persistence::UnitOfWork integration tests', db_integration: true do
   let(:entity_registry) { SalarySummary::Persistence::Entities::Registry.new }
 
   subject { SalarySummary::Persistence::UnitOfWork.new(entity_registry) }

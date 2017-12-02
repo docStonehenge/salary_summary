@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe 'Databases::MongoDB::Client integration tests', integration: true do
+describe 'Databases::MongoDB::Client integration tests', db_integration: true do
   subject { SalarySummary::Databases::MongoDB::Client.new }
 
   it 'sets the default database logging to a log file' do

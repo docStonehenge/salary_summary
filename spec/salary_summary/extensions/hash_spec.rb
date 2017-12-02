@@ -15,9 +15,9 @@ describe 'Hash class extension' do
     end
 
     it 'transforms value to nil if value cannot be transformed to mongo value' do
-      Foo = Struct.new(:field)
+      Test = Struct.new(:field)
 
-      expect({foo: Foo.new(field: "hello")}.to_mongo_value).to eql(foo: nil)
+      expect({foo: Test.new(field: "hello")}.to_mongo_value).to eql(foo: nil)
     end
   end
 end
