@@ -74,6 +74,7 @@ module SalarySummary
       let(:clean_entities) { subject.instance_variable_get(:@clean_entities) }
       let(:new_entities) { subject.instance_variable_get(:@new_entities) }
       let(:changed_entities) { subject.instance_variable_get(:@changed_entities) }
+      let(:removed_entities) { subject.instance_variable_get(:@removed_entities) }
 
       describe '#get entity_class, entity_id' do
         let(:entity) { SalarySummary::Entities::Salary.new(id: BSON::ObjectId.new, amount: 1400.0, period: Date.parse('07/09/2017')) }
@@ -123,6 +124,42 @@ module SalarySummary
             expect(Repositories::Registry).to receive(:new_repositories).once
 
             subject.commit
+
+            expect(new_entities).not_to include entity_to_save
+            expect(changed_entities).not_to include entity_to_update
+            expect(removed_entities).not_to include entity_to_delete
+          end
+        end
+
+        context 'when any operation fails' do
+          it "stops all subsequent processes, doesn't clear list neither create new registry" do
+            expect(
+              Repositories::Registry
+            ).to receive(:[]).once.with(entity_to_save.class).and_return repository
+
+            expect(repository).to receive(:insert).once.with(entity_to_save)
+
+            expect(
+              Repositories::Registry
+            ).to receive(:[]).once.with(entity_to_update.class).and_return repository
+
+            expect(repository).to receive(:update).once.with(
+                                    entity_to_update
+                                  ).and_raise(Mongo::Error::OperationFailure)
+
+            expect(
+              Repositories::Registry
+            ).not_to receive(:[]).with(entity_to_delete.class)
+
+            expect(Repositories::Registry).not_to receive(:new_repositories)
+
+            expect {
+              subject.commit
+            }.to raise_error(Mongo::Error::OperationFailure)
+
+            expect(new_entities).not_to include entity_to_save
+            expect(changed_entities).to include entity_to_update
+            expect(removed_entities).to include entity_to_delete
           end
         end
       end
@@ -260,7 +297,6 @@ module SalarySummary
 
       describe '#register_removed entity' do
         let(:entity) { double(:entity, id: 123) }
-        let(:removed_entities) { subject.instance_variable_get(:@removed_entities) }
 
         context "when removed_entities list doesn't contain entity yet" do
           it 'adds entity to removed_entities list' do

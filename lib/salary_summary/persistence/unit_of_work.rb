@@ -115,6 +115,7 @@ module SalarySummary
       def process_all_from(list, process_name) # :nodoc:
         list.each do |entity|
           Repositories::Registry[entity.class].public_send(process_name, entity)
+          list.delete? entity
         end
       end
 
