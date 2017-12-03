@@ -88,6 +88,45 @@ module SalarySummary
         end
       end
 
+      describe '#commit' do
+        let(:entity_to_save) { SalarySummary::Entities::Salary.new(id: BSON::ObjectId.new, amount: 1400.0, period: Date.parse('07/09/2017')) }
+        let(:entity_to_update) { SalarySummary::Entities::Salary.new(id: BSON::ObjectId.new, amount: 1400.0, period: Date.parse('07/09/2017')) }
+        let(:entity_to_delete) { SalarySummary::Entities::Salary.new(id: BSON::ObjectId.new, amount: 1400.0, period: Date.parse('07/09/2017')) }
+        let(:repository) { double(:repository) }
+
+        before do
+          subject.register_new(entity_to_save)
+          subject.register_changed(entity_to_update)
+          subject.register_removed(entity_to_delete)
+        end
+
+        context 'when all operations occur correctly' do
+          it "traverses all lists with to-persist entities and calls repository methods" do
+            expect(
+              Repositories::Registry
+            ).to receive(:[]).once.with(entity_to_save.class).and_return repository
+
+            expect(repository).to receive(:insert).once.with(entity_to_save)
+
+            expect(
+              Repositories::Registry
+            ).to receive(:[]).once.with(entity_to_update.class).and_return repository
+
+            expect(repository).to receive(:update).once.with(entity_to_update)
+
+            expect(
+              Repositories::Registry
+            ).to receive(:[]).once.with(entity_to_delete.class).and_return repository
+
+            expect(repository).to receive(:delete).once.with(entity_to_delete)
+
+            expect(Repositories::Registry).to receive(:new_repositories).once
+
+            subject.commit
+          end
+        end
+      end
+
       describe '#register_clean entity' do
         let(:entity) { SalarySummary::Entities::Salary.new(id: BSON::ObjectId.new, amount: 1400.0, period: Date.parse('07/09/2017')) }
 

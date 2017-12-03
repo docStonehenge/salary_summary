@@ -43,6 +43,14 @@ module SalarySummary
         @clean_entities.get(entity_class, entity_id)
       end
 
+      def commit
+        process_all_from @new_entities,     :insert
+        process_all_from @changed_entities, :update
+        process_all_from @removed_entities, :delete
+
+        Repositories::Registry.new_repositories
+      end
+
       # Registers <tt>entity</tt> on clean entities map, avoiding duplicates.
       # Ingores entities without IDs, calls registration even if present on other lists.
       # Returns the +entity+ added or +nil+ if entity has no ID or it's a duplicate.
@@ -103,6 +111,12 @@ module SalarySummary
       end
 
       private
+
+      def process_all_from(list, process_name) # :nodoc:
+        list.each do |entity|
+          Repositories::Registry[entity.class].public_send(process_name, entity)
+        end
+      end
 
       def register_on(list, entity, ignore: []) # :nodoc:
         return if entity.id.to_s.empty?
