@@ -335,6 +335,21 @@ module SalarySummary
                  "This repository cannot operate on OpenStruct entities."
                )
         end
+
+        it 'raises Persistence::OperationError when insertion fails' do
+          allow(entity_to_save).to receive(:to_mongo_document).once.and_return(
+                                     _id: 1, amount: 200.0, period: Date.parse('1990/01/01')
+                                   )
+
+          expect(client).to receive(:insert_on).once.with(
+                              :salaries,
+                              _id: 1, amount: 200.0, period: Date.parse('1990/01/01')
+                            ).and_raise(Mongo::Error, 'Error')
+
+          expect {
+            subject.insert entity_to_save
+          }.to raise_error(Persistence::OperationError, "The database operation has failed. Reason: 'Error'")
+        end
       end
 
       describe '#update entity' do

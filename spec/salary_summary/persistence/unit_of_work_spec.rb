@@ -71,10 +71,12 @@ module SalarySummary
 
       subject { described_class.new(Entities::Registry.new) }
 
-      let(:clean_entities) { subject.instance_variable_get(:@clean_entities) }
-      let(:new_entities) { subject.instance_variable_get(:@new_entities) }
-      let(:changed_entities) { subject.instance_variable_get(:@changed_entities) }
-      let(:removed_entities) { subject.instance_variable_get(:@removed_entities) }
+      it { is_expected.to have_attributes(clean_entities: an_instance_of(Entities::Registry), new_entities: an_instance_of(Set), changed_entities: an_instance_of(Set), removed_entities: an_instance_of(Set)) }
+
+      let(:clean_entities) { subject.clean_entities }
+      let(:new_entities) { subject.new_entities }
+      let(:changed_entities) { subject.changed_entities }
+      let(:removed_entities) { subject.removed_entities }
 
       describe '#get entity_class, entity_id' do
         let(:entity) { SalarySummary::Entities::Salary.new(id: BSON::ObjectId.new, amount: 1400.0, period: Date.parse('07/09/2017')) }

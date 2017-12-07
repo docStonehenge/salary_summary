@@ -27,7 +27,7 @@ module SalarySummary
         end
       end
 
-      attr_reader :clean_entities
+      attr_reader :clean_entities, :new_entities, :changed_entities, :removed_entities
 
       # Initializes an instance with three new Set objects and an Entities::Registry
       def initialize(entity_registry)
@@ -40,13 +40,13 @@ module SalarySummary
       # Returns +entity+ found by <tt>entity_class</tt> and <tt>entity_id</tt>
       # on <tt>clean_entities</tt> list or nil if no entity is found.
       def get(entity_class, entity_id)
-        @clean_entities.get(entity_class, entity_id)
+        clean_entities.get(entity_class, entity_id)
       end
 
       def commit
-        process_all_from @new_entities,     :insert
-        process_all_from @changed_entities, :update
-        process_all_from @removed_entities, :delete
+        process_all_from new_entities,     :insert
+        process_all_from changed_entities, :update
+        process_all_from removed_entities, :delete
 
         Repositories::Registry.new_repositories
       end
@@ -61,8 +61,8 @@ module SalarySummary
       #   # => <SalarySummary::Entities::Salary:0x007f8b1a9028b8 @id=123, @amount=nil, @period=nil>
       def register_clean(entity)
         register_on(
-          @clean_entities, entity,
-          ignore: [@new_entities, @changed_entities, @removed_entities]
+          clean_entities, entity,
+          ignore: [new_entities, changed_entities, removed_entities]
         )
       end
 
@@ -75,8 +75,8 @@ module SalarySummary
       #   register_new(SalarySummary::Entities::Salary.new(id: 123))
       #   # => #<Set: {#<SalarySummary::Entities::Salary:0x007f8b1a9028b8 @id=123, @amount=nil, @period=nil>}>
       def register_new(entity)
-        register_on @clean_entities, entity
-        register_on @new_entities, entity
+        register_on clean_entities, entity
+        register_on new_entities, entity
       end
 
       # Registers <tt>entity</tt> on changed entities list, avoiding duplicates.
@@ -88,7 +88,7 @@ module SalarySummary
       #   register_changed(SalarySummary::Entities::Salary.new(id: 123))
       #   # => #<Set: {#<SalarySummary::Entities::Salary:0x007f8b1a9028b8 @id=123, @amount=nil, @period=nil>}>
       def register_changed(entity)
-        register_on @changed_entities, entity
+        register_on changed_entities, entity
       end
 
       # Tries to remove <tt>entity</tt> from <tt>changed_entities</tt>, registers it
@@ -102,12 +102,12 @@ module SalarySummary
       #   register_removed(SalarySummary::Entities::Salary.new(id: 123))
       #   # => #<Set: {#<SalarySummary::Entities::Salary:0x007f8b1a9028b8 @id=123, @amount=nil, @period=nil>}>
       def register_removed(entity)
-        @changed_entities.delete entity
-        @clean_entities.delete   entity
+        changed_entities.delete entity
+        clean_entities.delete   entity
 
-        return if @new_entities.delete? entity
+        return if new_entities.delete? entity
 
-        register_on @removed_entities, entity
+        register_on removed_entities, entity
       end
 
       private
@@ -129,7 +129,7 @@ module SalarySummary
       def already_present_on_lists?(entity, lists_to_ignore) # :nodoc:
         (
           [
-            @new_entities, @changed_entities, @removed_entities
+            new_entities, changed_entities, removed_entities
           ] - lists_to_ignore
         ).any? { |list| list.include? entity }
       end
