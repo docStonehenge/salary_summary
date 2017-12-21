@@ -155,17 +155,14 @@ module SalarySummary
           def define_setter_method_for(attribute, type) # :nodoc:
             instance_eval do
               define_method("#{attribute}=") do |value|
-                instance_variable_set(
-                  :"@#{attribute}",
-                  Entities::Field.new(type: type, value: value).coerce
-                )
+                new_value = Entities::Field.new(type: type, value: value).coerce
 
-                unless attribute == :id
-                  begin
-                    Persistence::UnitOfWork.current.register_changed(self)
-                  rescue Persistence::UnitOfWorkNotStartedError
-                  end
-                end
+                begin
+                  Persistence::UnitOfWork.current.register_changed(self)
+                rescue Persistence::UnitOfWorkNotStartedError
+                end if attribute != :id and instance_variable_get(:"@#{attribute}") != value
+
+                instance_variable_set(:"@#{attribute}", new_value)
               end
             end
           end

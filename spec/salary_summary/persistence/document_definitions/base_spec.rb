@@ -50,9 +50,9 @@ module SalarySummary
 
                   expect(
                     subject
-                  ).to receive(:instance_variable_set).once.with(:"@id", id)
+                  ).to receive(:instance_variable_set).once.with(:"@id", id).and_return id
 
-                  subject.define_field(:id, type: BSON::ObjectId)
+                  expect(subject.define_field(:id, type: BSON::ObjectId)).to eql id
                 end
               end
 
@@ -77,7 +77,7 @@ module SalarySummary
 
                   expect(
                     subject
-                  ).to receive(:instance_variable_set).once.with(:"@foo", value)
+                  ).to receive(:instance_variable_set).once.with(:"@foo", value).and_return value
 
                   expect(subject.fields_list).to receive(:push).once.with(:foo)
                   expect(subject.fields).to receive(:[]=).once.with(:foo, { type: Integer })
@@ -85,21 +85,41 @@ module SalarySummary
 
                 it 'defines getter, setter, converting field and registering object into UnitOfWork' do
                   expect(
+                    subject
+                  ).to receive(:instance_variable_get).once.with(:"@foo").and_return nil
+
+                  expect(
                     Persistence::UnitOfWork
                   ).to receive(:current).once.and_return uow
 
                   expect(uow).to receive(:register_changed).once
 
-                  subject.define_field(:foo, type: Integer)
+                  expect(subject.define_field(:foo, type: Integer)).to eql value
+                end
+
+                context "when field value doesn't change" do
+                  it 'defines getter and setter for field; setter does not register on UnitOfWork' do
+                    expect(
+                      subject
+                    ).to receive(:instance_variable_get).once.with(:"@foo").and_return value
+
+                    expect(Persistence::UnitOfWork).not_to receive(:current)
+
+                    expect(subject.define_field(:foo, type: Integer)).to eql value
+                  end
                 end
 
                 context 'when current UnitOfWork is not started' do
                   it 'defines getter, setter, converting field only' do
                     expect(
+                      subject
+                    ).to receive(:instance_variable_get).once.with(:"@foo").and_return nil
+
+                    expect(
                       Persistence::UnitOfWork
                     ).to receive(:current).once.and_raise Persistence::UnitOfWorkNotStartedError
 
-                    subject.define_field(:foo, type: Integer)
+                    expect(subject.define_field(:foo, type: Integer)).to eql value
                   end
                 end
               end
