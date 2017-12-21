@@ -32,6 +32,7 @@ require 'salary_summary/persistence/operation_error'
 require 'salary_summary/persistence/document_definitions/base'
 require 'salary_summary/persistence/document_definitions/salary'
 require 'salary_summary/persistence/entities/field'
+require 'salary_summary/persistence/document_manager'
 
 require 'salary_summary/repositories/registry'
 require 'salary_summary/repositories/base'
