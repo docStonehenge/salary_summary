@@ -67,6 +67,61 @@ module SalarySummary
           end
         end
       end
+
+      describe '#find_all entity_type, modifier: {}, sorted_by: {}' do
+        let(:repository) { double(:repository) }
+        let(:entity) { double(:entity, id: BSON::ObjectId.new) }
+
+        before do
+          expect(
+            Repositories::Registry
+          ).to receive(:[]).once.with(Class).and_return repository
+        end
+
+        it 'returns collection of entities from query without modifier or sort' do
+          expect(repository).to receive(
+                                  :find_all
+                                ).once.with(modifier: {}, sorted_by: {}).and_return [entity]
+
+          expect(subject.find_all(Class)).to eql [entity]
+        end
+
+        it 'returns collection of entities from query with modifier, without sort' do
+          expect(repository).to receive(
+                                  :find_all
+                                ).once.with(
+                                  modifier: { foo: 'bar' }, sorted_by: {}
+                                ).and_return [entity]
+
+          expect(
+            subject.find_all(Class, modifier: { foo: 'bar' })
+          ).to eql [entity]
+        end
+
+        it 'returns collection of entities from query without modifier, with sort' do
+          expect(repository).to receive(
+                                  :find_all
+                                ).once.with(
+                                  modifier: {}, sorted_by: { foo: -1 }
+                                ).and_return [entity]
+
+          expect(
+            subject.find_all(Class, sorted_by: { foo: -1 })
+          ).to eql [entity]
+        end
+
+        it 'returns collection of entities from query with modifier and sort' do
+          expect(repository).to receive(
+                                  :find_all
+                                ).once.with(
+                                  modifier: { foo: 'bar' }, sorted_by: { foo: -1 }
+                                ).and_return [entity]
+
+          expect(
+            subject.find_all(Class, modifier: { foo: 'bar' }, sorted_by: { foo: -1 })
+          ).to eql [entity]
+        end
+      end
     end
   end
 end

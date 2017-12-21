@@ -13,7 +13,19 @@ module SalarySummary
       end
 
       def find(entity_type, entity_id)
-        Repositories::Registry[entity_type].find(entity_id)
+        repository_for(entity_type).find(entity_id)
+      end
+
+      def find_all(entity_type, modifier: {}, sorted_by: {})
+        repository_for(entity_type).find_all(
+          modifier: modifier, sorted_by: sorted_by
+        )
+      end
+
+      private
+
+      def repository_for(entity_type)
+        Repositories::Registry[entity_type]
       end
     end
   end
