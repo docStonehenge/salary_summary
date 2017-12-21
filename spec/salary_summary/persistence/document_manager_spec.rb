@@ -6,6 +6,8 @@ module SalarySummary
       let(:client) { double(:client, id_generator: id_gen) }
       let(:id_gen) { double(:id_generator) }
       let(:unit_of_work) { double(:unit_of_work) }
+      let(:repository) { double(:repository) }
+      let(:entity) { double(:entity, id: BSON::ObjectId.new) }
 
       before do
         allow(
@@ -36,9 +38,6 @@ module SalarySummary
       end
 
       describe '#find entity_type, entity_id' do
-        let(:repository) { double(:repository) }
-        let(:entity) { double(:entity, id: BSON::ObjectId.new) }
-
         before do
           expect(
             Repositories::Registry
@@ -69,9 +68,6 @@ module SalarySummary
       end
 
       describe '#find_all entity_type, modifier: {}, sorted_by: {}' do
-        let(:repository) { double(:repository) }
-        let(:entity) { double(:entity, id: BSON::ObjectId.new) }
-
         before do
           expect(
             Repositories::Registry
@@ -120,6 +116,35 @@ module SalarySummary
           expect(
             subject.find_all(Class, modifier: { foo: 'bar' }, sorted_by: { foo: -1 })
           ).to eql [entity]
+        end
+      end
+
+      describe '#persist entity' do
+        context "when entity hasn't an ID" do
+          before { allow(entity).to receive(:id).and_return nil }
+
+          it 'sets entity ID and registers on UnitOfWork as new' do
+            expect(id_gen).to receive(:generate).once.and_return 123
+            expect(entity).to receive(:id=).once.with(123)
+            expect(unit_of_work).to receive(:register_new).once.with(entity)
+            subject.persist entity
+          end
+        end
+
+        context 'when entity already has an ID' do
+          it "doesn't replace entity's ID and just calls UnitOfWork registration" do
+            expect(id_gen).not_to receive(:generate)
+            expect(entity).not_to receive(:id=).with(any_args)
+            expect(unit_of_work).to receive(:register_new).once.with(entity)
+            subject.persist entity
+          end
+        end
+      end
+
+      describe '#remove entity' do
+        it 'calls removed registration of entity on UnitOfWork' do
+          expect(unit_of_work).to receive(:register_removed).once.with(entity)
+          subject.remove entity
         end
       end
     end

@@ -22,6 +22,15 @@ module SalarySummary
         )
       end
 
+      def persist(entity)
+        entity.id = @id_generator.generate if entity.id.to_s.empty?
+        @unit_of_work.register_new entity
+      end
+
+      def remove(entity)
+        @unit_of_work.register_removed entity
+      end
+
       private
 
       def repository_for(entity_type)
