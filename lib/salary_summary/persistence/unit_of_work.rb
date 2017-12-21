@@ -51,6 +51,12 @@ module SalarySummary
         Repositories::Registry.new_repositories
       end
 
+      def detach(entity)
+        [
+          clean_entities, new_entities, changed_entities, removed_entities
+        ].each { |list| list.delete entity }
+      end
+
       # Registers <tt>entity</tt> on clean entities map, avoiding duplicates.
       # Ingores entities without IDs, calls registration even if present on other lists.
       # Returns the +entity+ added or +nil+ if entity has no ID or it's a duplicate.
@@ -115,7 +121,6 @@ module SalarySummary
       def process_all_from(list, process_name) # :nodoc:
         list.each do |entity|
           Repositories::Registry[entity.class].public_send(process_name, entity)
-          list.delete? entity
         end
       end
 

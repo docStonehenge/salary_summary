@@ -126,10 +126,6 @@ module SalarySummary
             expect(Repositories::Registry).to receive(:new_repositories).once
 
             subject.commit
-
-            expect(new_entities).not_to include entity_to_save
-            expect(changed_entities).not_to include entity_to_update
-            expect(removed_entities).not_to include entity_to_delete
           end
         end
 
@@ -158,10 +154,59 @@ module SalarySummary
             expect {
               subject.commit
             }.to raise_error(Mongo::Error::OperationFailure)
+          end
+        end
+      end
 
-            expect(new_entities).not_to include entity_to_save
-            expect(changed_entities).to include entity_to_update
-            expect(removed_entities).to include entity_to_delete
+      describe '#detach entity' do
+        let(:entity) { SalarySummary::Entities::Salary.new(id: BSON::ObjectId.new, amount: 1400.0, period: Date.parse('07/09/2017')) }
+
+        context 'when present only on clean_entities' do
+          it 'deletes entity from clean_entities only' do
+            subject.register_clean(entity)
+            expect(subject.clean_entities).to include entity
+
+            subject.detach entity
+
+            expect(subject.clean_entities).not_to include entity
+          end
+        end
+
+        context 'when present on clean_entities and changed_entities' do
+          it 'deletes entity from clean_entities and changed_entities' do
+            subject.register_clean(entity)
+            subject.register_changed(entity)
+            expect(subject.clean_entities).to include entity
+            expect(subject.changed_entities).to include entity
+
+            subject.detach entity
+
+            expect(subject.clean_entities).not_to include entity
+            expect(subject.changed_entities).not_to include entity
+          end
+        end
+
+        context 'when present on clean_entities and new_entities' do
+          it 'deletes entity from clean_entities and new_entities' do
+            subject.register_new(entity)
+            expect(subject.clean_entities).to include entity
+            expect(subject.new_entities).to include entity
+
+            subject.detach entity
+
+            expect(subject.clean_entities).not_to include entity
+            expect(subject.new_entities).not_to include entity
+          end
+        end
+
+        context 'when present on removed_entities' do
+          it 'deletes entity from removed_entities' do
+            subject.register_removed(entity)
+            expect(subject.removed_entities).to include entity
+
+            subject.detach entity
+
+            expect(subject.removed_entities).not_to include entity
           end
         end
       end
