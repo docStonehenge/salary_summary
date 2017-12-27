@@ -157,10 +157,12 @@ module SalarySummary
               define_method("#{attribute}=") do |value|
                 new_value = Entities::Field.new(type: type, value: value).coerce
 
-                begin
-                  Persistence::UnitOfWork.current.register_changed(self)
-                rescue Persistence::UnitOfWorkNotStartedError
-                end if attribute != :id and instance_variable_get(:"@#{attribute}") != value
+                if attribute != :id and instance_variable_get(:"@#{attribute}") != value
+                  begin
+                    Persistence::UnitOfWork.current.register_changed(self)
+                  rescue Persistence::UnitOfWorkNotStartedError
+                  end
+                end
 
                 instance_variable_set(:"@#{attribute}", new_value)
               end
