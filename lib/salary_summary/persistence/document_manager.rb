@@ -1,6 +1,10 @@
 module SalarySummary
   module Persistence
     class DocumentManager
+      extend Forwardable
+
+      def_delegators :@unit_of_work, :detach, :clear
+
       def initialize
         connection    = Databases::MongoDB::Client.current_or_new_connection
         @id_generator = connection.id_generator

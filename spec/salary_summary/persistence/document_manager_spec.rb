@@ -18,12 +18,6 @@ module SalarySummary
       end
 
       describe 'initialization' do
-        context 'when unit of work is already set' do
-          it 'initializes with a current UnitOfWork object' do
-            described_class.new
-          end
-        end
-
         context "when unit of work isn't already set" do
           it 'initializes with a new UnitOfWork object' do
             allow(UnitOfWork).to receive(:current).once.and_raise(
@@ -145,6 +139,20 @@ module SalarySummary
         it 'calls removed registration of entity on UnitOfWork' do
           expect(unit_of_work).to receive(:register_removed).once.with(entity)
           subject.remove entity
+        end
+      end
+
+      describe '#detach entity' do
+        it 'calls detach process for entity on UnitOfWork' do
+          expect(unit_of_work).to receive(:detach).once.with(entity)
+          subject.detach entity
+        end
+      end
+
+      describe '#clear' do
+        it 'calls clear process on UnitOfWork' do
+          expect(unit_of_work).to receive(:clear).once
+          subject.clear
         end
       end
     end
