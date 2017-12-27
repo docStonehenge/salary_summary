@@ -34,8 +34,8 @@ module SalarySummary
       describe '#find entity_type, entity_id' do
         before do
           expect(
-            Repositories::Registry
-          ).to receive(:[]).once.with(Class).and_return repository
+            subject
+          ).to receive(:repository_for).once.with(Class).and_return repository
         end
 
         context 'when entity is not found' do
@@ -64,8 +64,8 @@ module SalarySummary
       describe '#find_all entity_type, modifier: {}, sorted_by: {}' do
         before do
           expect(
-            Repositories::Registry
-          ).to receive(:[]).once.with(Class).and_return repository
+            subject
+          ).to receive(:repository_for).once.with(Class).and_return repository
         end
 
         it 'returns collection of entities from query without modifier or sort' do
@@ -110,6 +110,16 @@ module SalarySummary
           expect(
             subject.find_all(Class, modifier: { foo: 'bar' }, sorted_by: { foo: -1 })
           ).to eql [entity]
+        end
+      end
+
+      describe '#repository_for entity_type' do
+        it 'returns repository found for entity_type from registry' do
+          expect(
+            Repositories::Registry
+          ).to receive(:[]).once.with(Class).and_return repository
+
+          expect(subject.repository_for(Class)).to eql repository
         end
       end
 

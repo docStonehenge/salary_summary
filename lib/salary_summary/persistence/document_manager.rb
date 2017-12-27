@@ -26,6 +26,10 @@ module SalarySummary
         )
       end
 
+      def repository_for(entity_type)
+        Repositories::Registry[entity_type]
+      end
+
       def persist(entity)
         entity.id = @id_generator.generate if entity.id.to_s.empty?
         @unit_of_work.register_new entity
@@ -33,12 +37,6 @@ module SalarySummary
 
       def remove(entity)
         @unit_of_work.register_removed entity
-      end
-
-      private
-
-      def repository_for(entity_type)
-        Repositories::Registry[entity_type]
       end
     end
   end
