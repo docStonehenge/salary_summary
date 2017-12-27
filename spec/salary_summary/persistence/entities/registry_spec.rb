@@ -154,6 +154,24 @@ module SalarySummary
             ).to be_nil
           end
         end
+
+        describe '#clear' do
+          it 'empties entities hash' do
+            entities = [
+              SalarySummary::Entities::Salary.new(id: id, amount: 1400.0, period: Date.parse('07/09/2017')),
+              SalarySummary::Entities::Salary.new(id: 123, amount: 1400.0, period: Date.parse('07/09/2017')),
+              SalarySummary::Entities::Salary.new(id: 244, amount: 1400.0, period: Date.parse('07/09/2017'))
+            ]
+
+            entities.each { |entity| subject.add entity }
+
+            expect(subject.entities).not_to be_empty
+
+            subject.clear
+
+            expect(subject.entities).to be_empty
+          end
+        end
       end
     end
   end

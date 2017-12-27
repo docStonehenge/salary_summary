@@ -211,6 +211,27 @@ module SalarySummary
         end
       end
 
+      describe '#clear' do
+        it 'deletes all entities from all managed lists' do
+          new_entity = SalarySummary::Entities::Salary.new(id: BSON::ObjectId.new, amount: 1400.0, period: Date.parse('07/09/2017'))
+          changed_entity = SalarySummary::Entities::Salary.new(id: BSON::ObjectId.new, amount: 1400.0, period: Date.parse('07/09/2017'))
+          removed_entity = SalarySummary::Entities::Salary.new(id: BSON::ObjectId.new, amount: 1400.0, period: Date.parse('07/09/2017'))
+
+          subject.register_new(new_entity)
+          subject.register_clean(changed_entity)
+          subject.register_changed(changed_entity)
+          subject.register_removed(removed_entity)
+
+          subject.clear
+
+          expect(subject.clean_entities).not_to include new_entity
+          expect(subject.clean_entities).not_to include changed_entity
+          expect(subject.new_entities).to be_empty
+          expect(subject.changed_entities).to be_empty
+          expect(subject.removed_entities).to be_empty
+        end
+      end
+
       describe '#register_clean entity' do
         let(:entity) { SalarySummary::Entities::Salary.new(id: BSON::ObjectId.new, amount: 1400.0, period: Date.parse('07/09/2017')) }
 

@@ -34,6 +34,11 @@ module SalarySummary
           entities.delete(key_for(entity))
         end
 
+        # Removes all key-value pairs set on entities map.
+        def clear
+          entities.clear
+        end
+
         private
 
         def key_for(entity)

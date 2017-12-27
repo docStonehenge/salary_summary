@@ -51,10 +51,15 @@ module SalarySummary
         Repositories::Registry.new_repositories
       end
 
+      # Tries to delete entity from all lists on UnitOfWork, regardless if entity
+      # is present or not on lists.
       def detach(entity)
-        [
-          clean_entities, new_entities, changed_entities, removed_entities
-        ].each { |list| list.delete entity }
+        registration_lists.each { |list| list.delete entity }
+      end
+
+      # Tries to clear all registration lists on UnitOfWork, regardless if lists are already empty.
+      def clear
+        registration_lists.each(&:clear)
       end
 
       # Registers <tt>entity</tt> on clean entities map, avoiding duplicates.
@@ -66,10 +71,7 @@ module SalarySummary
       #   register_clean(SalarySummary::Entities::Salary.new(id: 123))
       #   # => <SalarySummary::Entities::Salary:0x007f8b1a9028b8 @id=123, @amount=nil, @period=nil>
       def register_clean(entity)
-        register_on(
-          clean_entities, entity,
-          ignore: [new_entities, changed_entities, removed_entities]
-        )
+        register_on(clean_entities, entity, ignore: registration_lists[1..3])
       end
 
       # Registers <tt>entity</tt> on new entities list and on clean entities, avoiding duplicates.
@@ -124,6 +126,10 @@ module SalarySummary
         end
       end
 
+      def registration_lists # :nodoc:
+        [clean_entities, new_entities, changed_entities, removed_entities]
+      end
+
       def register_on(list, entity, ignore: []) # :nodoc:
         return if entity.id.to_s.empty?
         return if already_present_on_lists?(entity, ignore)
@@ -132,11 +138,9 @@ module SalarySummary
       end
 
       def already_present_on_lists?(entity, lists_to_ignore) # :nodoc:
-        (
-          [
-            new_entities, changed_entities, removed_entities
-          ] - lists_to_ignore
-        ).any? { |list| list.include? entity }
+        (registration_lists[1..3] - lists_to_ignore).any? do |list|
+          list.include? entity
+        end
       end
     end
   end
