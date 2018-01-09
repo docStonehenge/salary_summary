@@ -53,11 +53,13 @@ module SalarySummary
         end
 
         # Inserts document into named collection.
-        # Raises Mongo::Error::OperationFailure if insertion fails.
+        # Raises Databases::OperationError if insertion fails.
         # Returns a Mongo::Operation::Result object indicating the number of insertions,
         # with acknowledgement.
         def insert_on(collection, document)
           database_collection(collection).insert_one(document)
+        rescue Mongo::Error => error
+          raise Databases::OperationError, error.message
         end
 
         # Updates document into named collection, finding by <tt>identifier</tt>.

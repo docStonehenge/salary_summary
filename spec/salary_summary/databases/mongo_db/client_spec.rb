@@ -172,6 +172,16 @@ module SalarySummary
 
             subject.insert_on('foo', foo: 'bar', bar: 'bazz')
           end
+
+          it 'raises Databases::OperationError when operation raises Mongo error' do
+            expect(collection).to receive(:insert_one).once.with(
+                                    foo: 'bar', bar: 'bazz'
+                                  ).and_raise Mongo::Error, 'Error'
+
+            expect {
+              subject.insert_on('foo', foo: 'bar', bar: 'bazz')
+            }.to raise_error(Databases::OperationError, 'Error')
+          end
         end
 
         describe '#update_on collection, identifier, document' do

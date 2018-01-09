@@ -1,13 +1,13 @@
 require 'spec_helper'
 
 module SalarySummary
-  module Persistence
+  module Repositories
     describe OperationError do
-      subject { described_class.new("Error from database") }
+      subject { described_class.new(:insertion, "Error from database") }
 
       it '#message' do
         expect(subject.message).to eql(
-                                     "The database operation has failed. "\
+                                     "Error on insertion operation. "\
                                      "Reason: 'Error from database'"
                                    )
       end
