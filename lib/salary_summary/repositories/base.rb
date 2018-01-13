@@ -33,7 +33,7 @@ module SalarySummary
         validate_class_on entity
         @connection.insert_on(@collection_name, entity.to_mongo_document)
       rescue Databases::OperationError => error
-        raise Repositories::OperationError.new(:insertion, error.message)
+        raise InsertionError, error.message
       end
 
       def update(entity)

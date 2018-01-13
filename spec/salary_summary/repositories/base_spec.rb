@@ -336,7 +336,7 @@ module SalarySummary
                )
         end
 
-        it 'raises Repositories::OperationError when insertion fails' do
+        it 'raises Repositories::InsertionError when insertion fails' do
           allow(entity_to_save).to receive(:to_mongo_document).once.and_return(
                                      _id: 1, amount: 200.0, period: Date.parse('1990/01/01')
                                    )
@@ -348,7 +348,7 @@ module SalarySummary
 
           expect {
             subject.insert entity_to_save
-          }.to raise_error(Repositories::OperationError, "Error on insertion operation. Reason: 'Error'")
+          }.to raise_error(Repositories::InsertionError, "Error on insertion operation. Reason: 'Error'")
         end
       end
 
