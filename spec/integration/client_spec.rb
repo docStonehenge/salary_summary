@@ -60,6 +60,142 @@ describe 'Databases::MongoDB::Client integration tests', db_integration: true do
     end
   end
 
+  describe 'insertions' do
+    it 'correctly inserts document on collection without previous id set' do
+      result = subject.insert_on(:test_collection, a: 'foo')
+      expect(result).to be_ok
+      expect(result.written_count).to eql 1
+    end
+
+    it 'correctly inserts document on collection with previous set id' do
+      new_id = subject.id_generator.generate
+
+      result = subject.insert_on(:test_collection, _id: new_id, a: 'foo')
+      expect(result).to be_ok
+      expect(result.written_count).to eql 1
+    end
+
+    it 'raises Databases::OperationError when insertion with same id is attempted' do
+      new_id = subject.id_generator.generate
+
+      subject.insert_on(:test_collection, _id: new_id, a: 'foo')
+
+      expect {
+        subject.insert_on(:test_collection, _id: new_id, a: 'bar')
+      }.to raise_error(SalarySummary::Databases::OperationError)
+    end
+  end
+
+  describe 'querying' do
+    before do
+      subject.insert_on(:test_collection, a: 'foo')
+      subject.insert_on(:test_collection, a: 'bar')
+      subject.insert_on(:test_collection, a: 'bazz')
+    end
+
+    it 'correctly returns documents found on collection' do
+      result = subject.find_on(:test_collection)
+
+      expect(result.count).not_to be_zero
+
+      result = result.entries
+      expect(result[0]).to include('a' => 'foo')
+      expect(result[1]).to include('a' => 'bar')
+      expect(result[2]).to include('a' => 'bazz')
+    end
+
+    it 'correctly returns documents filtered' do
+      result = subject.find_on(:test_collection, filter: { a: { '$regex' => 'ba' } })
+
+      expect(result.count).not_to be_zero
+
+      result = result.entries
+      expect(result[0]).to include('a' => 'bar')
+      expect(result[1]).to include('a' => 'bazz')
+    end
+
+    it 'correctly returns documents sorted' do
+      result = subject.find_on(:test_collection, sort: { a: 1 })
+
+      expect(result.count).not_to be_zero
+
+      result = result.entries
+      expect(result[0]).to include('a' => 'bar')
+      expect(result[1]).to include('a' => 'bazz')
+      expect(result[2]).to include('a' => 'foo')
+    end
+
+    it 'correctly returns documents filtered and sorted' do
+      result = subject.find_on(
+        :test_collection, filter: { a: { '$regex' => 'ba' } }, sort: { a: -1 }
+      )
+
+      expect(result.count).not_to be_zero
+
+      result = result.entries
+      expect(result[0]).to include('a' => 'bazz')
+      expect(result[1]).to include('a' => 'bar')
+    end
+  end
+
+  describe 'updating' do
+    before do
+      @id = subject.id_generator.generate
+      subject.insert_on(:test_collection, _id: @id, a: 'foo')
+    end
+
+    it 'correctly updates a document found on collection by identifier' do
+      result = subject.update_on(
+        :test_collection, { _id: @id }, { '$set' => { a: 'fooza' } }
+      )
+
+      expect(result).to be_ok
+      expect(result.modified_count).to eql 1
+    end
+
+    it 'raises Databases::OperationError when update fails' do
+      expect {
+        subject.update_on(:test_collection, @id, { '$set' => { a: 'fooza' } })
+      }.to raise_error(SalarySummary::Databases::OperationError)
+    end
+
+    it "doesn't raise error and doesn't modify document not found" do
+      result = subject.update_on(
+        :test_collection, { _id: 123 }, { '$set' => { a: 'fooza' } }
+      )
+
+      expect(result).to be_ok
+      expect(result.modified_count).to eql 0
+    end
+  end
+
+  describe 'deleting' do
+    before do
+      @id = subject.id_generator.generate
+      subject.insert_on(:test_collection, _id: @id, a: 'foo')
+    end
+
+    it 'correctly deletes a document found on collection by identifier' do
+      result = subject.delete_from(:test_collection, _id: @id)
+
+      expect(result).to be_ok
+      expect(result.deleted_count).to eql 1
+    end
+
+    it 'raises Databases::OperationError when deletion fails' do
+      expect {
+        subject.delete_from(:test_collection, @id)
+      }.to raise_error(SalarySummary::Databases::OperationError)
+    end
+
+    it "doesn't raise error and doesn't delete document not found" do
+      result = subject.delete_from(:test_collection, _id: 123)
+
+      expect(result).to be_ok
+      expect(result.deleted_count).to eql 0
+    end
+  end
+
   after do
     Thread.current.thread_variable_set(:connection, nil)
     subject.db_client.close

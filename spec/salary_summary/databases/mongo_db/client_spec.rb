@@ -202,6 +202,16 @@ module SalarySummary
 
             subject.update_on('foo', { name: 'Foo' }, { field: '2' })
           end
+
+          it 'raises Databases::OperationError when operation raises Mongo error' do
+            expect(collection).to receive(:update_one).once.with(
+                                    { name: 'Foo' }, { field: '2' }
+                                  ).and_raise Mongo::Error, 'Error'
+
+            expect {
+              subject.update_on('foo', { name: 'Foo' }, { field: '2' })
+            }.to raise_error(Databases::OperationError, 'Error')
+          end
         end
 
         describe '#delete_from collection, identifier' do
@@ -217,8 +227,17 @@ module SalarySummary
 
           it 'calls single document delete using identifier to find it' do
             expect(collection).to receive(:delete_one).once.with({ name: 'Foo' })
-
             subject.delete_from('foo', { name: 'Foo' })
+          end
+
+          it 'raises Databases::OperationError when operation raises Mongo error' do
+            expect(collection).to receive(:delete_one).once.with(
+                                    { name: 'Foo' }
+                                  ).and_raise Mongo::Error, 'Error'
+
+            expect {
+              subject.delete_from('foo', { name: 'Foo' })
+            }.to raise_error(Databases::OperationError, 'Error')
           end
         end
 

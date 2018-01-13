@@ -57,23 +57,29 @@ module SalarySummary
         # Returns a Mongo::Operation::Result object indicating the number of insertions,
         # with acknowledgement.
         def insert_on(collection, document)
-          database_collection(collection).insert_one(document)
-        rescue Mongo::Error => error
-          raise Databases::OperationError, error.message
+          trap_operation_error do
+            database_collection(collection).insert_one(document)
+          end
         end
 
         # Updates document into named collection, finding by <tt>identifier</tt>.
+        # Raises Databases::OperationError if update fails.
         # Returns a Mongo::Operation::Result object indicating the number of documents modified,
         # with acknowledgement.
         def update_on(collection, identifier, document)
-          database_collection(collection).update_one(identifier, document)
+          trap_operation_error do
+            database_collection(collection).update_one(identifier, document)
+          end
         end
 
         # Removes document found by <tt>identifier</tt> from named collection.
+        # Raises Databases::OperationError if deletion fails.
         # Returns a Mongo::Operation::Result object indicating the number of documents removed,
         # with acknowledgement.
         def delete_from(collection, identifier)
-          database_collection(collection).delete_one(identifier)
+          trap_operation_error do
+            database_collection(collection).delete_one(identifier)
+          end
         end
 
         # Calls the aggregation pipeline into collection, receiving splatted stages
@@ -91,6 +97,14 @@ module SalarySummary
         # Returns collection corresponding to the given <tt>name</tt>.
         def database_collection(name)
           db_client[name.to_sym]
+        end
+
+        private
+
+        def trap_operation_error # :nodoc:
+          yield
+        rescue Mongo::Error => error
+          raise Databases::OperationError, error.message
         end
       end
     end
