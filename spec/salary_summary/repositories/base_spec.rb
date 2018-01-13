@@ -323,14 +323,14 @@ module SalarySummary
           subject.insert entity_to_save
         end
 
-        it "raises ArgumentError if entity isn't an instance of entity_klass" do
+        it "raises InvalidEntityError if entity isn't an instance of entity_klass" do
           expect(entity).not_to receive(:to_mongo_document)
           expect(client).not_to receive(:insert_on).with(any_args)
 
           expect {
             subject.insert OpenStruct.new
           }.to raise_error(
-                 ArgumentError,
+                 InvalidEntityError,
                  "Entity must be of class: SalarySummary::Entities::Salary. "\
                  "This repository cannot operate on OpenStruct entities."
                )
@@ -373,14 +373,14 @@ module SalarySummary
           subject.update entity_to_save
         end
 
-        it "raises ArgumentError if entity isn't an instance of entity_klass" do
+        it "raises InvalidEntityError if entity isn't an instance of entity_klass" do
           expect(entity).not_to receive(:to_mongo_document).with(any_args)
           expect(client).not_to receive(:update_on).with(any_args)
 
           expect {
             subject.update OpenStruct.new
           }.to raise_error(
-                 ArgumentError,
+                 InvalidEntityError,
                  "Entity must be of class: SalarySummary::Entities::Salary. "\
                  "This repository cannot operate on OpenStruct entities."
                )
@@ -418,13 +418,13 @@ module SalarySummary
           subject.delete entity_to_save
         end
 
-        it "raises ArgumentError if entity isn't an instance of entity_klass" do
+        it "raises InvalidEntityError if entity isn't an instance of entity_klass" do
           expect(client).not_to receive(:delete_from).with(any_args)
 
           expect {
             subject.delete OpenStruct.new
           }.to raise_error(
-                 ArgumentError,
+                 InvalidEntityError,
                  "Entity must be of class: SalarySummary::Entities::Salary. "\
                  "This repository cannot operate on OpenStruct entities."
                )

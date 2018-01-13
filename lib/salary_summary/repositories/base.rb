@@ -81,12 +81,12 @@ module SalarySummary
       def validate_class_on(entity) # :nodoc:
         return if entity.is_a? @entity_klass
 
-        raise ArgumentError,
+        raise InvalidEntityError,
               "Entity must be of class: #{@entity_klass}. "\
               "This repository cannot operate on #{entity.class} entities."
       end
 
-      def trap_operation_error_as(error_klass)
+      def trap_operation_error_as(error_klass) # :nodoc:
         yield
       rescue Databases::OperationError => error
         raise error_klass, error.message
