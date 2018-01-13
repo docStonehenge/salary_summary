@@ -385,6 +385,26 @@ module SalarySummary
                  "This repository cannot operate on OpenStruct entities."
                )
         end
+
+        it 'raises Repositories::UpdateError when update operation fails' do
+          allow(entity_to_save).to receive(:id).and_return '123'
+
+          expect(entity_to_save).to receive(
+                                      :to_mongo_document
+                                    ).once.with(include_id_field: false).and_return(
+                                      amount: 200.0, period: Date.parse('1990/01/01')
+                                    )
+
+          expect(client).to receive(:update_on).once.with(
+                              :salaries,
+                              { _id: '123' },
+                              { '$set' => { amount: 200.0, period: Date.parse('1990/01/01') } }
+                            ).and_raise Databases::OperationError, 'Error'
+
+          expect {
+            subject.update entity_to_save
+          }.to raise_error(Repositories::UpdateError, "Error on update operation. Reason: 'Error'")
+        end
       end
 
       describe '#delete entity' do

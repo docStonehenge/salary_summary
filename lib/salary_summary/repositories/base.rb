@@ -31,18 +31,21 @@ module SalarySummary
 
       def insert(entity)
         validate_class_on entity
-        @connection.insert_on(@collection_name, entity.to_mongo_document)
-      rescue Databases::OperationError => error
-        raise InsertionError, error.message
+
+        trap_operation_error_as InsertionError do
+          @connection.insert_on(@collection_name, entity.to_mongo_document)
+        end
       end
 
       def update(entity)
         validate_class_on entity
 
-        @connection.update_on(
-          @collection_name, { _id: entity.id },
-          '$set' => entity.to_mongo_document(include_id_field: false)
-        )
+        trap_operation_error_as UpdateError do
+          @connection.update_on(
+            @collection_name, { _id: entity.id },
+            '$set' => entity.to_mongo_document(include_id_field: false)
+          )
+        end
       end
 
       def delete(entity)
@@ -78,6 +81,12 @@ module SalarySummary
         raise ArgumentError,
               "Entity must be of class: #{@entity_klass}. "\
               "This repository cannot operate on #{entity.class} entities."
+      end
+
+      def trap_operation_error_as(error_klass)
+        yield
+      rescue Databases::OperationError => error
+        raise error_klass, error.message
       end
     end
   end
