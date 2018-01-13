@@ -429,6 +429,18 @@ module SalarySummary
                  "This repository cannot operate on OpenStruct entities."
                )
         end
+
+        it 'raises Repositories::DeleteError when delete operation fails' do
+          allow(entity_to_save).to receive(:id).and_return '123'
+
+          expect(client).to receive(:delete_from).once.with(
+                              :salaries, _id: '123'
+                            ).and_raise(Databases::OperationError, 'Error')
+
+          expect {
+            subject.delete entity_to_save
+          }.to raise_error(Repositories::DeleteError, "Error on delete operation. Reason: 'Error'")
+        end
       end
 
       describe '#aggregate' do

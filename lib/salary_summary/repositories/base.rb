@@ -50,7 +50,10 @@ module SalarySummary
 
       def delete(entity)
         validate_class_on entity
-        @connection.delete_from(@collection_name, _id: entity.id)
+
+        trap_operation_error_as DeleteError do
+          @connection.delete_from(@collection_name, _id: entity.id)
+        end
       end
 
       def aggregate
