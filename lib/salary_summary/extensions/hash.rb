@@ -4,4 +4,8 @@ class Hash
       self[key] = value.respond_to?(:to_mongo_value) ? value.to_mongo_value : nil
     end
   end
+
+  def present?
+    !empty?
+  end
 end

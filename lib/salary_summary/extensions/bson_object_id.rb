@@ -9,5 +9,9 @@ module BSON
     def to_mongo_value
       self
     end
+
+    def present?
+      to_s.present?
+    end
   end
 end

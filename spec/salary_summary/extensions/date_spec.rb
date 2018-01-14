@@ -46,4 +46,9 @@ describe 'Date class extension' do
       expect(datetime_value.to_mongo_value).to eql datetime_value
     end
   end
+
+  it '#present?' do
+    expect(Date.today).to be_present
+    expect(DateTime.new).to be_present
+  end
 end

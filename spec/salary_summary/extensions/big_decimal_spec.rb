@@ -28,4 +28,9 @@ describe 'BigDecimal extension' do
       expect(value.to_mongo_value).to eql value.to_s
     end
   end
+
+  it '#present?' do
+    expect(BigDecimal.new('')).to be_present
+    expect(BigDecimal.new(0)).to be_present
+  end
 end

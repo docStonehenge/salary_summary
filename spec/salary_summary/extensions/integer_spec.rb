@@ -28,4 +28,9 @@ describe 'Integer class extension' do
       expect(1.to_mongo_value).to eql 1
     end
   end
+
+  it '#present?' do
+    expect(1).to be_present
+    expect(0).to be_present
+  end
 end

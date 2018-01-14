@@ -30,4 +30,8 @@ describe 'Time class extension' do
       expect(value.to_mongo_value).to eql value
     end
   end
+
+  it '#present?' do
+    expect(Time.now).to be_present
+  end
 end

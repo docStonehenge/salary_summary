@@ -20,4 +20,15 @@ describe 'Hash class extension' do
       expect({foo: Test.new(field: "hello")}.to_mongo_value).to eql(foo: nil)
     end
   end
+
+  describe '#present?' do
+    it 'is present when it has at least when key-value pair' do
+      expect(a: 'b').to be_present
+      expect(nil => nil).to be_present
+    end
+
+    it "isn't present when it is empty" do
+      expect({}).not_to be_present
+    end
+  end
 end

@@ -6,4 +6,8 @@ describe 'TrueClass extension' do
       expect(true.to_mongo_value).to eql true
     end
   end
+
+  it '#present?' do
+    expect(true).to be_present
+  end
 end

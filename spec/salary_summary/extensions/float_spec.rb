@@ -28,4 +28,9 @@ describe 'Float class extension' do
       expect(100.0.to_mongo_value).to eql 100.0
     end
   end
+
+  it '#present?' do
+    expect(1.0).to be_present
+    expect(0.0).to be_present
+  end
 end

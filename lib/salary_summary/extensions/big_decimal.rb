@@ -8,4 +8,8 @@ class BigDecimal
   def to_mongo_value
     to_s
   end
+
+  def present?
+    true
+  end
 end

@@ -20,4 +20,16 @@ describe 'Array class extension' do
       ).to eql [nil, 123]
     end
   end
+
+  describe '#present?' do
+    it 'is present when array has at least one value' do
+      expect([1]).to be_present
+      expect([[]]).to be_present
+      expect([[], []]).to be_present
+    end
+
+    it "isn't present when array is empty" do
+      expect([]).not_to be_present
+    end
+  end
 end

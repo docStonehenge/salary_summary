@@ -30,4 +30,8 @@ describe 'BSON::ObjectId extension' do
       expect(value.to_mongo_value).to eql value
     end
   end
+
+  it '#present?' do
+    expect(BSON::ObjectId.new).to be_present
+  end
 end

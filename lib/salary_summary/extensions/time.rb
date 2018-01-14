@@ -8,4 +8,8 @@ class Time
   def to_mongo_value
     self
   end
+
+  def present?
+    true
+  end
 end

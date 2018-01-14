@@ -8,4 +8,8 @@ class Date
   def to_mongo_value
     self
   end
+
+  def present?
+    true
+  end
 end
