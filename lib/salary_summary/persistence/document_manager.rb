@@ -8,7 +8,7 @@ module SalarySummary
         begin
           unit_of_work
         rescue UnitOfWorkNotStartedError
-          UnitOfWork.new_current
+          start_new_unit_of_work
         end
       end
 
@@ -35,6 +35,12 @@ module SalarySummary
         unit_of_work.register_removed entity
       end
 
+      def commit
+        unit_of_work.commit
+      ensure
+        start_new_unit_of_work
+      end
+
       def detach(entity)
         unit_of_work.detach entity
       end
@@ -47,6 +53,10 @@ module SalarySummary
 
       def unit_of_work
         UnitOfWork.current
+      end
+
+      def start_new_unit_of_work
+        UnitOfWork.new_current
       end
     end
   end

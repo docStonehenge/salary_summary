@@ -130,7 +130,7 @@ module SalarySummary
         end
 
         context 'when any operation fails' do
-          it "stops all subsequent processes, doesn't clear list neither create new registry" do
+          it "stops all subsequent processes, doesn't clear list, but creates new registry" do
             expect(
               Repositories::Registry
             ).to receive(:[]).once.with(entity_to_save.class).and_return repository
@@ -143,7 +143,7 @@ module SalarySummary
 
             expect(repository).to receive(:update).once.with(
                                     entity_to_update
-                                  ).and_raise(Mongo::Error::OperationFailure)
+                                  ).and_raise(Repositories::UpdateError, 'Error')
 
             expect(
               Repositories::Registry
@@ -153,7 +153,7 @@ module SalarySummary
 
             expect {
               subject.commit
-            }.to raise_error(Mongo::Error::OperationFailure)
+            }.to raise_error(Repositories::UpdateError)
           end
         end
       end

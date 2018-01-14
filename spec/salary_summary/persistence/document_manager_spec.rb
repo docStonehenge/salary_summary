@@ -152,6 +152,28 @@ module SalarySummary
         end
       end
 
+      describe '#commit' do
+        context 'when unit of work processes correctly' do
+          it 'commits unit of work and starts new one on thread' do
+            expect(unit_of_work).to receive(:commit).once
+            expect(UnitOfWork).to receive(:new_current).once
+
+            subject.commit
+          end
+        end
+
+        context 'when a operation fails inside unit of work commit' do
+          it 'starts new unit of work and raises error' do
+            expect(unit_of_work).to receive(:commit).once.and_raise(Repositories::DeleteError, 'Error')
+            expect(UnitOfWork).to receive(:new_current).once
+
+            expect {
+              subject.commit
+            }.to raise_error(Repositories::DeleteError)
+          end
+        end
+      end
+
       describe '#detach entity' do
         it 'calls detach process for entity on UnitOfWork' do
           expect(unit_of_work).to receive(:detach).once.with(entity)
