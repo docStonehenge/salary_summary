@@ -30,7 +30,8 @@ module SalarySummary
       end
 
       def insert(entity)
-        validate_class_on entity
+        validate_entity_class    entity
+        validate_entity_id_field entity
 
         trap_operation_error_as InsertionError do
           @connection.insert_on(@collection_name, entity.to_mongo_document)
@@ -38,7 +39,8 @@ module SalarySummary
       end
 
       def update(entity)
-        validate_class_on entity
+        validate_entity_class    entity
+        validate_entity_id_field entity
 
         trap_operation_error_as UpdateError do
           @connection.update_on(
@@ -49,7 +51,8 @@ module SalarySummary
       end
 
       def delete(entity)
-        validate_class_on entity
+        validate_entity_class    entity
+        validate_entity_id_field entity
 
         trap_operation_error_as DeleteError do
           @connection.delete_from(@collection_name, _id: entity.id)
@@ -78,12 +81,17 @@ module SalarySummary
         Persistence::UnitOfWork.current.register_clean(@entity_klass.new(entry))
       end
 
-      def validate_class_on(entity) # :nodoc:
+      def validate_entity_class(entity) # :nodoc:
         return if entity.is_a? @entity_klass
 
         raise InvalidEntityError,
               "Entity must be of class: #{@entity_klass}. "\
               "This repository cannot operate on #{entity.class} entities."
+      end
+
+      def validate_entity_id_field(entity) # :nodoc:
+        return unless entity.id.to_s.empty?
+        raise InvalidEntityError, "Entity must have an 'id' field set."
       end
 
       def trap_operation_error_as(error_klass) # :nodoc:

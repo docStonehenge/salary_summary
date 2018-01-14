@@ -7,6 +7,7 @@ module SalarySummary
       let(:uow) { double(:uow) }
       let(:entity) { double(:entity, id: 1) }
       let(:entity2) { double(:entity, id: 2) }
+      let(:entity_to_save) { Entities::Salary.new(id: BSON::ObjectId.new) }
 
       let(:described_class) do
         class TestRepository
@@ -308,8 +309,6 @@ module SalarySummary
       end
 
       describe '#insert entity' do
-        let(:entity_to_save) { Entities::Salary.new }
-
         it 'saves an entry from entity instance on collection, based on its mapped fields' do
           allow(entity_to_save).to receive(:to_mongo_document).once.and_return(
                              _id: 1, amount: 200.0, period: Date.parse('1990/01/01')
@@ -324,16 +323,28 @@ module SalarySummary
         end
 
         it "raises InvalidEntityError if entity isn't an instance of entity_klass" do
+          entity = OpenStruct.new
           expect(entity).not_to receive(:to_mongo_document)
           expect(client).not_to receive(:insert_on).with(any_args)
 
           expect {
-            subject.insert OpenStruct.new
+            subject.insert entity
           }.to raise_error(
                  InvalidEntityError,
                  "Entity must be of class: SalarySummary::Entities::Salary. "\
                  "This repository cannot operate on OpenStruct entities."
                )
+        end
+
+        it "raises InvalidEntityError if entity doesn't have id field set" do
+          expect(entity_to_save).to receive(:id).and_return nil
+
+          expect(entity_to_save).not_to receive(:to_mongo_document)
+          expect(client).not_to receive(:insert_on).with(any_args)
+
+          expect {
+            subject.insert entity_to_save
+          }.to raise_error(InvalidEntityError, 'Entity must have an \'id\' field set.')
         end
 
         it 'raises Repositories::InsertionError when insertion fails' do
@@ -353,11 +364,7 @@ module SalarySummary
       end
 
       describe '#update entity' do
-        let(:entity_to_save) { Entities::Salary.new }
-
         it 'calls document update on collection, using entity id as identifier' do
-          allow(entity_to_save).to receive(:id).and_return '123'
-
           expect(entity_to_save).to receive(
                                       :to_mongo_document
                                     ).once.with(include_id_field: false).and_return(
@@ -366,7 +373,7 @@ module SalarySummary
 
           expect(client).to receive(:update_on).once.with(
                               :salaries,
-                              { _id: '123' },
+                              { _id: entity_to_save.id },
                               { '$set' => { amount: 200.0, period: Date.parse('1990/01/01') } }
                             )
 
@@ -374,11 +381,12 @@ module SalarySummary
         end
 
         it "raises InvalidEntityError if entity isn't an instance of entity_klass" do
+          entity = OpenStruct.new
           expect(entity).not_to receive(:to_mongo_document).with(any_args)
           expect(client).not_to receive(:update_on).with(any_args)
 
           expect {
-            subject.update OpenStruct.new
+            subject.update entity
           }.to raise_error(
                  InvalidEntityError,
                  "Entity must be of class: SalarySummary::Entities::Salary. "\
@@ -386,9 +394,18 @@ module SalarySummary
                )
         end
 
-        it 'raises Repositories::UpdateError when update operation fails' do
-          allow(entity_to_save).to receive(:id).and_return '123'
+        it "raises InvalidEntityError if entity doesn't have id field set" do
+          allow(entity_to_save).to receive(:id).and_return nil
 
+          expect(entity_to_save).not_to receive(:to_mongo_document)
+          expect(client).not_to receive(:update_on).with(any_args)
+
+          expect {
+            subject.update entity_to_save
+          }.to raise_error(InvalidEntityError, 'Entity must have an \'id\' field set.')
+        end
+
+        it 'raises Repositories::UpdateError when update operation fails' do
           expect(entity_to_save).to receive(
                                       :to_mongo_document
                                     ).once.with(include_id_field: false).and_return(
@@ -397,7 +414,7 @@ module SalarySummary
 
           expect(client).to receive(:update_on).once.with(
                               :salaries,
-                              { _id: '123' },
+                              { _id: entity_to_save.id },
                               { '$set' => { amount: 200.0, period: Date.parse('1990/01/01') } }
                             ).and_raise Databases::OperationError, 'Error'
 
@@ -408,8 +425,6 @@ module SalarySummary
       end
 
       describe '#delete entity' do
-        let(:entity_to_save) { Entities::Salary.new }
-
         it 'calls document delete on collection, using entity id as identifier' do
           allow(entity_to_save).to receive(:id).and_return '123'
 
@@ -430,11 +445,18 @@ module SalarySummary
                )
         end
 
-        it 'raises Repositories::DeleteError when delete operation fails' do
-          allow(entity_to_save).to receive(:id).and_return '123'
+        it "raises InvalidEntityError if entity doesn't have id field set" do
+          allow(entity_to_save).to receive(:id).and_return nil
+          expect(client).not_to receive(:delete_from).with(any_args)
 
+          expect {
+            subject.delete entity_to_save
+          }.to raise_error(InvalidEntityError, 'Entity must have an \'id\' field set.')
+        end
+
+        it 'raises Repositories::DeleteError when delete operation fails' do
           expect(client).to receive(:delete_from).once.with(
-                              :salaries, _id: '123'
+                              :salaries, _id: entity_to_save.id
                             ).and_raise(Databases::OperationError, 'Error')
 
           expect {
