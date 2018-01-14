@@ -17,7 +17,7 @@ module SalarySummary
 
           raise Queries::EntityNotFoundError.new(
                   id: id, entity_name: @entity_klass.name
-                ) if query.empty?
+                ) if query.count.zero?
 
           query.first
         end
