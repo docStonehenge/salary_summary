@@ -47,6 +47,8 @@ module SalarySummary
         process_all_from new_entities,     :insert
         process_all_from changed_entities, :update
         process_all_from removed_entities, :delete
+
+        true
       ensure
         Repositories::Registry.new_repositories
       end

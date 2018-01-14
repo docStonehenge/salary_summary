@@ -125,7 +125,7 @@ module SalarySummary
 
             expect(Repositories::Registry).to receive(:new_repositories).once
 
-            subject.commit
+            expect(subject.commit).to be true
           end
         end
 

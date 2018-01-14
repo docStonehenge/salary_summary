@@ -155,10 +155,10 @@ module SalarySummary
       describe '#commit' do
         context 'when unit of work processes correctly' do
           it 'commits unit of work and starts new one on thread' do
-            expect(unit_of_work).to receive(:commit).once
+            expect(unit_of_work).to receive(:commit).once.and_return true
             expect(UnitOfWork).to receive(:new_current).once
 
-            subject.commit
+            expect(subject.commit).to be true
           end
         end
 
