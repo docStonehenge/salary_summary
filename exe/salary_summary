@@ -3,8 +3,8 @@
 require "salary_summary"
 include SalarySummary
 
-Persistence::UnitOfWork.new_current
-@repository    = Repositories::SalariesRepository.new
+dm             = Persistence::DocumentManager.new
+@repository    = dm.repository_for(Entities::Salary)
 @table_builder = Builders::TableBuilder.new(@repository)
 @information   = ''
 
@@ -46,7 +46,8 @@ loop do
     salary = Interpreters::InformationInterpreter.new.parse(@information)
 
     if salary
-      @repository.insert(salary)
+      dm.persist salary
+      dm.commit
       puts "Saved correctly into the database: period: #{salary.month}/#{salary.year}, amount: #{salary.amount}"
     else
       puts "We found an error to save that salary, buddy. Please, try again."
@@ -61,7 +62,7 @@ loop do
     print "\n"
     @table_builder.build_sum_footer
   when COMMANDS.dig(:export)
-    if @repository.sum_by_amount.zero? and @repository.find_all.none?
+    if @repository.sum_by_amount.zero? and dm.find_all.none?
       puts 'Enter your salary values first...'
       redo
     end
