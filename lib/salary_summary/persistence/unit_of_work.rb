@@ -131,7 +131,7 @@ module SalarySummary
       end
 
       def register_on(list, entity, ignore: []) # :nodoc:
-        return if entity.id.to_s.empty?
+        return unless entity.id.present?
         return if already_present_on_lists?(entity, ignore)
 
         list.add entity

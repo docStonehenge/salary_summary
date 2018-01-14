@@ -31,7 +31,7 @@ module SalarySummary
       end
 
       def persist(entity)
-        entity.id = @id_generator.generate if entity.id.to_s.empty?
+        entity.id = @id_generator.generate unless entity.id.present?
         @unit_of_work.register_new entity
       end
 

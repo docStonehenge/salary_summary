@@ -90,7 +90,7 @@ module SalarySummary
       end
 
       def validate_entity_id_field(entity) # :nodoc:
-        return unless entity.id.to_s.empty?
+        return if entity.id.present?
         raise InvalidEntityError, "Entity must have an 'id' field set."
       end
 
