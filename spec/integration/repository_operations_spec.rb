@@ -157,5 +157,42 @@ describe 'Repositories integration tests', db_integration: true do
       expect(second_query[2]).to equal entity3
       expect(second_query[3]).to equal entity4
     end
+
+    it 'returns entities correctly filtered' do
+      result = repo.find_all(filter: { age: { '$gte' => 30 } })
+
+      entity1 = result[0]
+      entity2 = result[1]
+
+      expect(entity1.id).to eql @entity2.id
+      expect(entity2.id).to eql @entity3.id
+    end
+
+    it 'returns entities correctly sorted' do
+      result = repo.find_all(sorted_by: { age: -1 })
+
+      entity1 = result[0]
+      entity2 = result[1]
+      entity3 = result[2]
+      entity4 = result[3]
+      expect(entity1.id).to eql @entity3.id
+      expect(entity2.id).to eql @entity2.id
+      expect(entity3.id).to eql @entity4.id
+      expect(entity4.id).to eql @entity1.id
+    end
+
+    it 'returns entities correctly filtered and sorted' do
+      result = repo.find_all(filter: { age: { '$gte' => 30 } }, sorted_by: { age: -1 })
+
+      entity1 = result[0]
+      entity2 = result[1]
+
+      expect(entity1.id).to eql @entity3.id
+      expect(entity2.id).to eql @entity2.id
+    end
+
+    it 'returns empty collection when no entities are found' do
+      expect(repo.find_all(filter: { age: { '$gt' => 60 } })).to be_empty
+    end
   end
 end

@@ -149,7 +149,7 @@ module SalarySummary
               Repositories::Registry
             ).not_to receive(:[]).with(entity_to_delete.class)
 
-            expect(Repositories::Registry).not_to receive(:new_repositories)
+            expect(Repositories::Registry).to receive(:new_repositories).once
 
             expect {
               subject.commit

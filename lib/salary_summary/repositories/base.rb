@@ -23,8 +23,8 @@ module SalarySummary
         end
       end
 
-      def find_all(modifier: {}, sorted_by: {})
-        get_entries(modifier, sorted_by).map do |entry|
+      def find_all(filter: {}, sorted_by: {})
+        get_entries(filter, sorted_by).map do |entry|
           load_entity(entry.dig('_id')) { entry }
         end
       end

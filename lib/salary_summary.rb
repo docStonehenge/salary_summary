@@ -1,7 +1,6 @@
 require "salary_summary/version"
 
 require 'singleton'
-require 'forwardable'
 require 'bigdecimal'
 require 'date'
 require 'csv'

@@ -99,7 +99,7 @@ module SalarySummary
         end
       end
 
-      describe '#find_all modifier: {}, sorted_by: {}' do
+      describe '#find_all filter: {}, sorted_by: {}' do
         it 'raises error when call to current UnitOfWork raises error' do
           expect(client).to receive(:find_on).with(
                               :salaries, filter: {}, sort: {}
@@ -121,7 +121,7 @@ module SalarySummary
             allow(Persistence::UnitOfWork).to receive(:current).and_return uow
           end
 
-          context 'when provided with a query modifier' do
+          context 'when provided with a query filter' do
             before do
               expect(client).to receive(:find_on).once.with(
                                   :salaries, filter: { period: Date.parse('January/2016') }, sort: {}
@@ -138,12 +138,12 @@ module SalarySummary
               expect(uow).to receive(:register_clean).once.with(entity).and_return entity
 
               expect(
-                subject.find_all(modifier: { period: Date.parse('January/2016') })
+                subject.find_all(filter: { period: Date.parse('January/2016') })
               ).to eql [entity]
             end
           end
 
-          context 'when not provided with a query modifier' do
+          context 'when not provided with a query filter' do
             before do
               expect(client).to receive(:find_on).with(
                                   :salaries, filter: {}, sort: {}
@@ -221,7 +221,7 @@ module SalarySummary
                            ).once.with(Entities::Salary, 125).and_return nil
           end
 
-          context 'when provided with a query modifier' do
+          context 'when provided with a query filter' do
             before do
               expect(client).to receive(:find_on).once.with(
                                   :salaries,
@@ -247,12 +247,12 @@ module SalarySummary
               expect(uow).to receive(:register_clean).once.with(entity).and_return entity
 
               expect(
-                subject.find_all(modifier: { period: Date.parse('January/2016') })
+                subject.find_all(filter: { period: Date.parse('January/2016') })
               ).to eql [@loaded_entity, entity]
             end
           end
 
-          context 'when not provided with a query modifier' do
+          context 'when not provided with a query filter' do
             before do
               expect(client).to receive(:find_on).once.with(
                                   :salaries, filter: {}, sort: {}
