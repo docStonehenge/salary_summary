@@ -9,7 +9,7 @@ shared_context 'StubEntity' do
     define_field :wage,       type: BigDecimal
 
     def self.repository
-      SalarySummary::Repositories::StubRepository
+      StubRepository
     end
   end
 
