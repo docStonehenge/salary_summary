@@ -1,34 +1,8 @@
 require 'spec_helper'
 
 describe 'Repositories integration tests', db_integration: true do
-  class StubRepository
-    include SalarySummary::Repositories::Base
-
-    private
-
-    def entity_klass
-      StubEntity
-    end
-
-    def collection_name
-      :stubs
-    end
-  end
-
-  class StubEntity
-    include SalarySummary::Persistence::DocumentDefinitions::Base
-
-    define_field :first_name, type: String
-    define_field :age,        type: Integer
-    define_field :wage,       type: BigDecimal
-
-    def self.repository
-      SalarySummary::Repositories::StubRepository
-    end
-  end
-
-  let(:entity) { StubEntity.new }
-  let(:repo) { StubRepository.new }
+  include_context 'StubRepository'
+  include_context 'StubEntity'
 
   describe 'insertions' do
     it 'correctly inserts entity on collection' do

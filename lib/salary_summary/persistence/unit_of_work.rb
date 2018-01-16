@@ -64,6 +64,24 @@ module SalarySummary
         registration_lists.each(&:clear)
       end
 
+      # Indicates whether an entity is managed by the UnitOfWork. An entity is considered
+      # to be managed when it's present on UnitOfWork registration lists besides
+      # the +removed_entities+ list.
+      # Returns true if entity is present on such lists; false if it's present on
+      # +removed_entities+ or if no registration lists include it.
+      def managed?(entity)
+        return false if removed_entities.include? entity
+        present_on_lists? entity, registration_lists[0..2]
+      end
+
+      # Indicates whether an entity is detached from the UnitOfWork. An entity is considered
+      # to be detached when no registration lists include it.
+      # Returns true if entity isn't present on any of its lists; false if it's present
+      # on at least one list.
+      def detached?(entity)
+        !present_on_lists? entity, registration_lists
+      end
+
       # Registers <tt>entity</tt> on clean entities map, avoiding duplicates.
       # Ingores entities without IDs, calls registration even if present on other lists.
       # Returns the +entity+ added or +nil+ if entity has no ID or it's a duplicate.
@@ -132,17 +150,19 @@ module SalarySummary
         [clean_entities, new_entities, changed_entities, removed_entities]
       end
 
+      def present_on_lists?(entity, lists_to_compare) # :nodoc:
+        lists_to_compare.any? { |list| list.include? entity }
+      end
+
       def register_on(list, entity, ignore: []) # :nodoc:
         return unless entity.id.present?
-        return if already_present_on_lists?(entity, ignore)
+        return if present_on_persistent_lists?(entity, ignore)
 
         list.add entity
       end
 
-      def already_present_on_lists?(entity, lists_to_ignore) # :nodoc:
-        (registration_lists[1..3] - lists_to_ignore).any? do |list|
-          list.include? entity
-        end
+      def present_on_persistent_lists?(entity, lists_to_ignore) # :nodoc:
+        present_on_lists?(entity, (registration_lists[1..3] - lists_to_ignore))
       end
     end
   end

@@ -3,6 +3,8 @@ require 'spec_helper'
 module SalarySummary
   module Persistence
     describe UnitOfWork do
+      include_context 'StubEntity'
+
       describe '.new_current uow' do
         context 'when there is a current UnitOfWork running' do
           before do
@@ -229,6 +231,68 @@ module SalarySummary
           expect(subject.new_entities).to be_empty
           expect(subject.changed_entities).to be_empty
           expect(subject.removed_entities).to be_empty
+        end
+      end
+
+      describe '#managed? entity' do
+        before do
+          entity.id = BSON::ObjectId.new
+        end
+
+        it 'is true when entity is present on clean entities' do
+          subject.register_clean entity
+          expect(subject.managed?(entity)).to be true
+        end
+
+        it 'is true when entity is present on new entities' do
+          subject.register_new entity
+          expect(subject.managed?(entity)).to be true
+        end
+
+        it 'is true when entity is present on changed entities' do
+          subject.register_changed entity
+          expect(subject.managed?(entity)).to be true
+        end
+
+        it 'is false when entity is present on removed entities' do
+          subject.register_removed entity
+          expect(subject.managed?(entity)).to be false
+        end
+
+        it 'is false when no registration lists to manage entity includes it' do
+          expect(subject.managed?(entity)).to be false
+        end
+      end
+
+      describe '#detached? entity' do
+        it "is true when entity isn't present on any of the registration lists" do
+          expect(subject.detached?(entity)).to be true
+        end
+
+        context 'when entity is present on list' do
+          before do
+            entity.id = BSON::ObjectId.new
+          end
+
+          it 'is false when entity is present on clean entities' do
+            subject.register_clean entity
+            expect(subject.detached?(entity)).to be false
+          end
+
+          it 'is false when entity is present on new entities' do
+            subject.register_new entity
+            expect(subject.detached?(entity)).to be false
+          end
+
+          it 'is false when entity is present on changed entities' do
+            subject.register_changed entity
+            expect(subject.detached?(entity)).to be false
+          end
+
+          it 'is false when entity is present on removed entities' do
+            subject.register_removed entity
+            expect(subject.detached?(entity)).to be false
+          end
         end
       end
 
