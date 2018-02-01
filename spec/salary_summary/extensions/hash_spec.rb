@@ -11,7 +11,7 @@ describe 'Hash class extension' do
         {
           foo: "bar", "amount" => BigDecimal.new("459.90"), [1] => Date.parse('2017/01/01')
         }.to_mongo_value
-      ).to eql(foo: 'bar', 'amount' => '0.4599E3', [1] => Date.parse('2017/01/01'))
+      ).to eql(foo: 'bar', 'amount' => 459.9, [1] => Date.parse('2017/01/01'))
     end
 
     it 'transforms value to nil if value cannot be transformed to mongo value' do

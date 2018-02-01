@@ -6,7 +6,7 @@ class BigDecimal
   end
 
   def to_mongo_value
-    to_s
+    to_f
   end
 
   def present?

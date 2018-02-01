@@ -22,10 +22,10 @@ describe 'BigDecimal extension' do
   end
 
   describe '#to_mongo_value' do
-    it 'returns string value from BigDecimal value' do
+    it 'returns float value from BigDecimal value' do
       value = BigDecimal.new("459.99")
 
-      expect(value.to_mongo_value).to eql value.to_s
+      expect(value.to_mongo_value).to eql value.to_f
     end
   end
 
