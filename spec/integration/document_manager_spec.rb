@@ -7,7 +7,7 @@ describe 'Persistence::DocumentManager integration tests', db_integration: true 
   let(:dm) { SalarySummary::Persistence::DocumentManager.new }
   let(:uow) { SalarySummary::Persistence::UnitOfWork.current }
 
-  context 'persisting on UnitOfWork' do
+  context 'persisting on UnitOfWork and inserting on database' do
     it "persists entity setting its ID field" do
       dm.persist entity
 
@@ -50,6 +50,31 @@ describe 'Persistence::DocumentManager integration tests', db_integration: true 
       expect(uow.new_entities).not_to include loaded_entity
       expect(uow.new_entities).not_to include entity
     end
+
+    it 'raises ArgumentError when trying to change ID from a persisted entity' do
+      dm.persist entity
+
+      expect {
+        entity.id = BSON::ObjectId.new
+      }.to raise_error(ArgumentError, 'Cannot change ID from an entity that is still on current UnitOfWork')
+    end
+
+    it 'correctly inserts entity into database' do
+      dm.persist entity
+      expect(dm.commit).to be true
+    end
+
+    it 'changes ID from detached entity, without marking on UnitOfWork' do
+      dm.persist entity
+      dm.commit
+
+      dm.detach entity
+      new_id = BSON::ObjectId.new
+
+      entity._id = new_id
+
+      expect(entity.id).to eql new_id
+    end
   end
 
   context 'removing entities' do
@@ -71,6 +96,14 @@ describe 'Persistence::DocumentManager integration tests', db_integration: true 
       expect(uow.managed?(entity)).to be false
     end
 
+    it 'raises ArgumentError when trying to change ID from a removed entity' do
+      dm.persist entity
+
+      expect {
+        entity.id = BSON::ObjectId.new
+      }.to raise_error(ArgumentError, 'Cannot change ID from an entity that is still on current UnitOfWork')
+    end
+
     it 'removes an entity loaded from database' do
       dm.persist entity
       dm.commit
@@ -82,23 +115,66 @@ describe 'Persistence::DocumentManager integration tests', db_integration: true 
       expect(uow.managed?(entity)).to be false
       expect(uow.managed?(loaded_entity)).to be false
     end
+
+    it 'changes ID from detached entity, without marking on UnitOfWork' do
+      dm.persist entity
+      dm.commit
+
+      dm.remove entity
+      dm.detach entity
+      new_id = BSON::ObjectId.new
+
+      entity._id = new_id
+
+      expect(entity.id).to eql new_id
+    end
   end
 
-  context 'insertions' do
+  context 'updating entities' do
     before do
       dm.persist entity
+      dm.commit
     end
 
-    it 'correctly inserts entity into database' do
-      expect(dm.commit).to be true
+    it 'correctly marks entity as to be updated on UnitOfWork' do
+      entity.first_name = 'John'
+
+      expect(uow.managed?(entity)).to be true
     end
 
-    it 'raises error when entity ID field is removed' do
-      entity.id = nil
+    it 'correctly updates name on database' do
+      entity.first_name = 'John'
+
+      expect(entity.first_name).to eql 'John'
+
+      dm.commit
+
+      expect(entity.first_name).to eql 'John'
+
+      dm.detach(entity)
+
+      loaded_entity = dm.find(entity.class, entity.id)
+
+      expect(loaded_entity.first_name).to eql 'John'
+    end
+
+    it 'raises ArgumentError when trying to change ID from a changed entity' do
+      entity.first_name = 'John'
 
       expect {
-        dm.commit
-      }.to raise_error(SalarySummary::Repositories::InvalidEntityError)
+        entity._id = BSON::ObjectId.new
+      }.to raise_error(ArgumentError, 'Cannot change ID from an entity that is still on current UnitOfWork')
+    end
+
+    it 'changes ID from detached entity, without marking on UnitOfWork' do
+      entity.first_name = 'John'
+
+      dm.detach entity
+      new_id = BSON::ObjectId.new
+
+      entity._id = new_id
+
+      expect(entity.id).to eql new_id
     end
   end
 end

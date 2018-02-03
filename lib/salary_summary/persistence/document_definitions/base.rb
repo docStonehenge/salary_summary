@@ -17,12 +17,12 @@ module SalarySummary
             @fields      = {} # Contains specifications of field names and types.
 
             define_field :id, type: BSON::ObjectId
-            alias_method :_id, :id
-            alias_method :_id=, :id=
+            alias_method(:_id, :id)
+            alias_method(:_id=, :id=)
 
-                         class << self
-                           attr_reader :fields_list, :fields
-                         end
+            class << self
+              attr_reader :fields_list, :fields
+            end
           end
         end
 
@@ -124,18 +124,23 @@ module SalarySummary
           # and +fields+ hash with <tt>name</tt> and <tt>type</tt>.
           # For any attributes besides 'id', calls registration of entity object
           # into current UnitOfWork.
+          # When attribute is 'id', setter method will check if entity is detached:
+          # if it is, then it's possible to change ID (considering that a detached entity
+          # is't present on current UnitOfWork); if it is not, it raises an ArgumentError.
           #
           # Examples
           #
           #   class Entity
+          #     ...
+          #
           #     define_field :first_name, type: String
           #   end
           #
           #   Entity.fields_list
-          #   #=> [:first_name]
+          #   #=> [:id, :first_name]
           #
           #   Entity.fields
-          #   #=> {:first_name=>{:type=>String}
+          #   #=> {:id=>{:type=>BSON::ObjectId}, :first_name=>{:type=>String}
           #
           #   Entity.new.first_name = "John Doe"
           #   Entity.new.first_name
@@ -156,18 +161,23 @@ module SalarySummary
             instance_eval do
               define_method("#{attribute}=") do |value|
                 new_value = Entities::Field.new(type: type, value: value).coerce
-
-                if attribute != :id and instance_variable_get(:"@#{attribute}") != value
-                  begin
-                    Persistence::UnitOfWork.current.register_changed(self)
-                  rescue Persistence::UnitOfWorkNotStartedError
-                  end
-                end
-
+                handle_registration_for_changes_on attribute, new_value
                 instance_variable_set(:"@#{attribute}", new_value)
               end
             end
           end
+        end
+
+        private
+
+        def handle_registration_for_changes_on(attribute, value) # :nodoc:
+          if attribute == :id and !Persistence::UnitOfWork.current.detached? self
+            raise ArgumentError,
+                  'Cannot change ID from an entity that is still on current UnitOfWork'
+          elsif instance_variable_get(:"@#{attribute}") != value
+            Persistence::UnitOfWork.current.register_changed(self)
+          end
+        rescue Persistence::UnitOfWorkNotStartedError
         end
       end
     end

@@ -8,16 +8,16 @@ module SalarySummary
         let!(:id) { BSON::ObjectId.new }
 
         describe 'ClassMethods' do
-          subject { Class.new { include Base } }
+          let(:described_class) { Class.new { include Base } }
 
           it 'defines ID field' do
-            expect(subject.new).to have_id_defined
+            expect(described_class.new).to have_id_defined
           end
 
           describe '.repository' do
             it 'raises NotImplementedError' do
               expect {
-                subject.repository
+                described_class.repository
               }.to raise_error(NotImplementedError)
             end
           end
@@ -27,99 +27,125 @@ module SalarySummary
 
             describe '.define_field name, type:' do
               context 'when field is ID' do
-                it 'defines getter and setter for field, converting field only' do
-                  expect(subject).to receive(:attr_reader).once.with(:id)
-                  expect(subject.fields_list).to receive(:push).once.with(:id)
-                  expect(subject.fields).to receive(:[]=).once.with(:id, { type: BSON::ObjectId })
+                context 'when entity is handled by current UnitOfWork' do
+                  before do
+                    @subject = described_class.new(id: BSON::ObjectId.new)
+                    Persistence::UnitOfWork.new_current
+                    Persistence::UnitOfWork.current.register_clean @subject
+                  end
 
-                  expect(subject).to receive(:instance_eval).once.and_yield
+                  it 'defines getter and setter for field, and setter will raise ArgumentError' do
+                    expect(described_class.fields_list).to include(:id)
+                    expect(described_class.fields).to include(id: { type: BSON::ObjectId })
 
-                  expect(subject).to receive(
-                                       :define_method
-                                     ).once.with("id=").and_yield id
+                    expect(@subject).to respond_to :id
+                    expect(@subject).to respond_to(:id=)
 
-                  expect(Persistence::UnitOfWork).not_to receive(:current)
+                    expect {
+                      expect {
+                        @subject.id = BSON::ObjectId.new
+                      }.to raise_error(ArgumentError, 'Cannot change ID from an entity that is still on current UnitOfWork')
+                    }.not_to change(@subject, :id)
+                  end
+                end
 
-                  expect(
-                    Entities::Field
-                  ).to receive(:new).once.with(
-                         type: BSON::ObjectId, value: id
-                       ).and_return field
+                context "when entity isn't handled by current UnitOfWork" do
+                  before do
+                    @subject = described_class.new
+                    Persistence::UnitOfWork.new_current
+                  end
 
-                  expect(field).to receive(:coerce).once.and_return id
+                  it 'defines getter and setter for field, allows setting id correctly' do
+                    expect(described_class.fields_list).to include(:id)
+                    expect(described_class.fields).to include(id: { type: BSON::ObjectId })
 
-                  expect(
-                    subject
-                  ).to receive(:instance_variable_set).once.with(:"@id", id).and_return id
+                    expect(@subject).to respond_to :id
+                    expect(@subject).to respond_to(:id=)
 
-                  expect(subject.define_field(:id, type: BSON::ObjectId)).to eql id
+                    new_id = BSON::ObjectId.new
+
+                    expect { @subject.id = new_id }.to change(@subject, :id).to(new_id)
+                    expect(Persistence::UnitOfWork.current.managed?(@subject)).to be false
+                  end
+                end
+
+                context "when UnitOfWork isn't started" do
+                  before do
+                    @subject = described_class.new
+                    Persistence::UnitOfWork.current = nil
+                  end
+
+                  it 'defines getter and setter for field, allows setting id correctly' do
+                    expect(described_class.fields_list).to include(:id)
+                    expect(described_class.fields).to include(id: { type: BSON::ObjectId })
+
+                    expect(@subject).to respond_to :id
+                    expect(@subject).to respond_to(:id=)
+
+                    new_id = BSON::ObjectId.new
+
+                    expect { @subject.id = new_id }.to change(@subject, :id).to(new_id)
+                  end
                 end
               end
 
               context 'when field is any other than ID' do
-                let(:value) { 123 }
-
                 before do
-                  expect(subject).to receive(:attr_reader).once.with(:foo)
-                  expect(subject).to receive(:instance_eval).once.and_yield
-
-                  expect(subject).to receive(
-                                       :define_method
-                                     ).once.with("foo=").and_yield value
-
-                  expect(
-                    Entities::Field
-                  ).to receive(:new).once.with(
-                         type: Integer, value: value
-                       ).and_return field
-
-                  expect(field).to receive(:coerce).once.and_return value
-
-                  expect(
-                    subject
-                  ).to receive(:instance_variable_set).once.with(:"@foo", value).and_return value
-
-                  expect(subject.fields_list).to receive(:push).once.with(:foo)
-                  expect(subject.fields).to receive(:[]=).once.with(:foo, { type: Integer })
+                  described_class.define_field :name, type: String
+                  expect(described_class.fields_list).to include(:name)
+                  expect(described_class.fields).to include(name: { type: String })
                 end
 
-                it 'defines getter, setter, converting field and registering object into UnitOfWork' do
-                  expect(
-                    subject
-                  ).to receive(:instance_variable_get).once.with(:"@foo").and_return nil
+                context 'when value changes' do
+                  before do
+                    @subject = described_class.new(id: BSON::ObjectId.new)
+                    Persistence::UnitOfWork.new_current
+                    expect(@subject).to respond_to :name
+                    expect(@subject).to respond_to(:name=)
+                  end
 
-                  expect(
-                    Persistence::UnitOfWork
-                  ).to receive(:current).once.and_return uow
+                  it 'defines getter, setter, converting field and registering object into UnitOfWork' do
+                    expect {
+                      @subject.name = 'New name'
 
-                  expect(uow).to receive(:register_changed).once
-
-                  expect(subject.define_field(:foo, type: Integer)).to eql value
+                      expect(
+                        Persistence::UnitOfWork.current.managed?(@subject)
+                      ).to be true
+                    }.to change(@subject, :name).to('New name')
+                  end
                 end
 
                 context "when field value doesn't change" do
+                  before do
+                    @subject = described_class.new(id: BSON::ObjectId.new, name: 'New name')
+                    Persistence::UnitOfWork.new_current
+                    expect(@subject).to respond_to :name
+                    expect(@subject).to respond_to(:name=)
+                  end
+
                   it 'defines getter and setter for field; setter does not register on UnitOfWork' do
-                    expect(
-                      subject
-                    ).to receive(:instance_variable_get).once.with(:"@foo").and_return value
+                    expect {
+                      @subject.name = 'New name'
 
-                    expect(Persistence::UnitOfWork).not_to receive(:current)
-
-                    expect(subject.define_field(:foo, type: Integer)).to eql value
+                      expect(
+                        Persistence::UnitOfWork.current.managed?(@subject)
+                      ).to be false
+                    }.not_to change(@subject, :name)
                   end
                 end
 
                 context 'when current UnitOfWork is not started' do
+                  before do
+                    @subject = described_class.new(id: BSON::ObjectId.new, name: 'Name')
+                    Persistence::UnitOfWork.current = nil
+                    expect(@subject).to respond_to :name
+                    expect(@subject).to respond_to(:name=)
+                  end
+
                   it 'defines getter, setter, converting field only' do
-                    expect(
-                      subject
-                    ).to receive(:instance_variable_get).once.with(:"@foo").and_return nil
-
-                    expect(
-                      Persistence::UnitOfWork
-                    ).to receive(:current).once.and_raise Persistence::UnitOfWorkNotStartedError
-
-                    expect(subject.define_field(:foo, type: Integer)).to eql value
+                    expect {
+                      @subject.name = 'New name'
+                    }.to change(@subject, :name).to('New name')
                   end
                 end
               end
