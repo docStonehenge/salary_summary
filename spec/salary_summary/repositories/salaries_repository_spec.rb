@@ -4,7 +4,6 @@ module SalarySummary
   module Repositories
     describe SalariesRepository do
       let(:client) { double(:client) }
-      let(:salary) { double(:salary, period: Date.parse('01/2016'), amount: 150.0) }
 
       subject { described_class.new(client: client) }
 
@@ -17,18 +16,22 @@ module SalarySummary
       end
 
       describe '#sum_by_amount' do
-        it 'returns a document with the sum of all entries on the collection' do
-          allow(client).to receive(:aggregate_on).once.with(
-                             :salaries, { :$group => { _id: 'Sum', sum: { :$sum => '$amount' } } }
-                           ).and_return [{ '_id' => 'Sum', 'sum' => 1000.0 }]
+        it 'returns the sum of all amount entries on the collection' do
+          expect(subject).to receive(:aggregate).once.and_yield
+
+          expect(subject).to receive(:group).once.with(
+                               nil, { sum: { :$sum => '$amount' } }
+                             ).and_return [{ '_id' => nil, 'sum' => 1000.0 }]
 
           expect(subject.sum_by_amount).to eql 1000.0
         end
 
         it 'returns zero if aggregation returns empty' do
-          expect(client).to receive(:aggregate_on).once.with(
-                              :salaries, { :$group => { _id: 'Sum', sum: { :$sum => '$amount' } } }
-                            ).and_return []
+          expect(subject).to receive(:aggregate).once.and_yield
+
+          expect(subject).to receive(:group).once.with(
+                               nil, { sum: { :$sum => '$amount' } }
+                             ).and_return []
 
           expect(subject.sum_by_amount).to be_zero
         end

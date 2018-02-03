@@ -196,6 +196,31 @@ describe 'Databases::MongoDB::Client integration tests', db_integration: true do
     end
   end
 
+  describe 'aggregating' do
+    before do
+      subject.insert_on(:test_collection, a: 'foo', fruits: ['apple', 'pear'])
+      subject.insert_on(:test_collection, a: 'bar', fruits: ['pineapple', 'pear', 'tomato'])
+      subject.insert_on(:test_collection, a: 'bazz', fruits: ['grape', 'pear', 'apple', 'tomato'])
+    end
+
+    it 'returns correct aggregation object to operate on its entries' do
+      agg = subject.aggregate_on(:test_collection) do
+        unwind :fruits
+        group '$fruits', { count: { :$sum => 1 } }
+      end
+
+      expect(agg.entries).to eql(
+                               [
+                                 { "_id" => "grape", "count" => 1 },
+                                 { "_id" => "pineapple", "count" => 1 },
+                                 { "_id" => "pear", "count" => 3 },
+                                 { "_id" => "tomato", "count" => 2 },
+                                 { "_id" => "apple", "count" => 2 }
+                               ]
+                             )
+    end
+  end
+
   after do
     Thread.current.thread_variable_set(:connection, nil)
     subject.db_client.close

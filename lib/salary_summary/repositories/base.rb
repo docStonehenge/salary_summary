@@ -59,8 +59,8 @@ module SalarySummary
         end
       end
 
-      def aggregate
-        @connection.aggregate_on(@collection_name, *(yield [])).entries
+      def aggregate(&block)
+        @connection.aggregate_on(@collection_name, &block).entries
       end
 
       private

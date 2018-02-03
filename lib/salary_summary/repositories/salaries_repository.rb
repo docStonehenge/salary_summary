@@ -19,9 +19,7 @@ module SalarySummary
       end
 
       def sum_aggregation
-        aggregate do |stages|
-          stages << { :$group => { _id: 'Sum', sum: { :$sum => '$amount' } } }
-        end
+        aggregate { group nil, { sum: { :$sum => '$amount' } } }
       end
     end
   end

@@ -465,20 +465,15 @@ module SalarySummary
         end
       end
 
-      describe '#aggregate' do
+      describe '#aggregate &block' do
         it 'calls aggregation pipeline on collection, allowing stage append on block' do
-          expect(client).to receive(:aggregate_on).once.with(
-                              :salaries,
-                              { :$group => { _id: 'Sum', count: { :$sum => 1 } } },
-                              { :$foo => 'bar' }
-                            ).and_return [{ '_id' => 'Sum', 'count' => 12 }]
+          expect do |b|
+            expect(client).to receive(:aggregate_on).once.with(
+                                :salaries, &b
+                              ).and_return([{ '_id' => 'Sum', 'count' => 12 }])
 
-          expect(
-            subject.aggregate do |stages|
-              stages << { :$group => { _id: 'Sum', count: { :$sum => 1 } } }
-              stages << { :$foo => 'bar' }
-            end
-          ).to eql [{ '_id' => 'Sum', 'count' => 12 }]
+            expect(subject.aggregate(&b)).to eql [{ '_id' => 'Sum', 'count' => 12 }]
+          end.to yield_control
         end
       end
     end

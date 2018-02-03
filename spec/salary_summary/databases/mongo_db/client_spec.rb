@@ -241,7 +241,7 @@ module SalarySummary
           end
         end
 
-        describe '#aggregate_on collection, *stages' do
+        describe '#aggregate_on collection, &block' do
           let(:aggregation_result) { double }
 
           before do
@@ -254,7 +254,7 @@ module SalarySummary
                                ).once.with('foo').and_return collection
           end
 
-          it 'calls aggregate pipeline method on collection, using stages arguments' do
+          it 'calls aggregate pipeline method on collection, using block into aggregation wrapper' do
             expect(collection).to receive(:aggregate).once.with(
                                     [
                                       { :$group => { _id: 'Sum', sum: { :$sum => '$amount' } } }
@@ -262,9 +262,9 @@ module SalarySummary
                                   ).and_return aggregation_result
 
             expect(
-              subject.aggregate_on(
-                'foo', { :$group => { _id: 'Sum', sum: { :$sum => '$amount' } } }
-              )
+              subject.aggregate_on('foo') do
+                group 'Sum', { sum: { :$sum => '$amount' } }
+              end
             ).to eql aggregation_result
           end
         end
