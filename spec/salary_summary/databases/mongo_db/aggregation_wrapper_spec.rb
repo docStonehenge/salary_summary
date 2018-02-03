@@ -77,6 +77,76 @@ module SalarySummary
             expect(subject.stages).to include(:$sort => { field1: -1 })
           end
         end
+
+        describe '#geo_near spherical: false, distance_field:, near:, other_fields' do
+          context 'using spherical default value' do
+            it 'puts a Hash with $geoNear key pointing to specifications with spherical false' do
+              subject.geo_near(
+                include: { limit: 200 }, distance_field: 'distance',
+                near: [20, 30]
+              )
+
+              expect(subject.stages).to include(
+                                          :$geoNear => {
+                                            spherical: false,
+                                            distanceField: 'distance',
+                                            near: [20, 30],
+                                            limit: 200
+                                          }
+                                        )
+            end
+          end
+
+          context 'using spherical option as true' do
+            it 'puts a Hash with $geoNear key pointing to specifications with spherical true' do
+              subject.geo_near(
+                spherical: true, distance_field: 'distance', near: [20, 30]
+              )
+
+              expect(subject.stages).to include(
+                                          :$geoNear => {
+                                            spherical: true,
+                                            distanceField: 'distance',
+                                            near: [20, 30]
+                                          }
+                                        )
+            end
+          end
+        end
+
+        describe '#lookup from:, local_field:, foreign_field:, as:' do
+          it 'puts a Hash with $lookup key pointing to specifications document' do
+            subject.lookup(
+              from: 'another_collection',
+              local_field: 'field1',
+              foreign_field: 'field2',
+              as: 'array_field'
+            )
+
+            expect(subject.stages).to include(
+                                        :$lookup => {
+                                          from: 'another_collection',
+                                          localField: 'field1',
+                                          foreignField: 'field2',
+                                          as: 'array_field'
+                                        }
+                                      )
+          end
+        end
+
+        describe '#out specifications' do
+          it 'puts a Hash with $out key pointing to out collection name into stages' do
+            subject.out('new_collection')
+            expect(subject.stages).to include(:$out => 'new_collection')
+          end
+        end
+
+        describe '#index_stats' do
+          it 'puts a Hash with $indexStats key pointing to empty document into stages' do
+            subject.index_stats
+            expect(subject.stages).to include(:$indexStats => {})
+          end
+        end
       end
     end
   end

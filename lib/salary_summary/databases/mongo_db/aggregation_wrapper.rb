@@ -5,7 +5,7 @@ module SalarySummary
         attr_reader :stages
 
         instance_eval do
-          [:project, :match, :redact, :limit, :skip, :sort].each do |stage|
+          [:project, :match, :redact, :limit, :skip, :sort, :out].each do |stage|
             define_method(stage) do |specifications|
               push_stage_as stage, specifications
             end
@@ -29,6 +29,27 @@ module SalarySummary
 
         def sample(sample_size)
           push_stage_as :sample, size: sample_size
+        end
+
+        def geo_near(spherical: false, distance_field:, near:, include: {})
+          push_stage_as(
+            :geoNear,
+            {
+              spherical: spherical, distanceField: distance_field, near: near
+            }.merge(include)
+          )
+        end
+
+        def lookup(from:, local_field:, foreign_field:, as:)
+          push_stage_as(
+            :lookup,
+            from: from, localField: local_field,
+            foreignField: foreign_field, as: as
+          )
+        end
+
+        def index_stats
+          push_stage_as :indexStats, {}
         end
 
         private
