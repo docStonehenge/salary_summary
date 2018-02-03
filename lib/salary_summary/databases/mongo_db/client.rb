@@ -89,7 +89,9 @@ module SalarySummary
         # Examples
         #
         #  aggregate_on(:sample, { :$group => { _id: nil, count: { :$sum => 1 } } })
-        #  #=> #<Mongo::Collection::View::Aggregation:0x007fb6131dd118 @view=#<Mongo::Collection::View:0x70209990748720 namespace='test.sample' @filter={} @options={}>, @pipeline=[{:$group=>{:_id=>nil, :count=>{:$sum=>1}}}], @options={}>
+        #  #=> #<Mongo::Collection::View::Aggregation:0x007fb6131dd118
+        #        @view=#<Mongo::Collection::View:0x70209990748720 namespace='test.sample' @filter={} @options={}>,
+        #        @pipeline=[{:$group=>{:_id=>nil, :count=>{:$sum=>1}}}], @options={}>
         def aggregate_on(collection, *stages)
           database_collection(collection).aggregate(stages)
         end

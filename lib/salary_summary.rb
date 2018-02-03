@@ -25,6 +25,7 @@ require 'salary_summary/databases/connection_error'
 require 'salary_summary/databases/operation_error'
 require 'salary_summary/databases/connection_properties_error'
 require 'salary_summary/databases/mongo_db/client'
+require 'salary_summary/databases/mongo_db/aggregation_wrapper'
 
 require 'salary_summary/persistence/entities/registry'
 require 'salary_summary/persistence/unit_of_work_not_started_error'
