@@ -1,5 +1,13 @@
-sudo: false
+env:
+  global:
+    - GIT_COMMITTED_AT=$(if [ "$TRAVIS_PULL_REQUEST" == "false" ]; then git log -1 --pretty=format:%ct; else git log -1 --skip 1 --pretty=format:%ct; fi)
+    - PROTOCOL=mongodb
+    - HOST="127.0.0.1"
+    - PORT=27017
+    - DATABASE="salary_summary_test"
 language: ruby
 rvm:
   - 2.3.1
-before_install: gem install bundler -v 1.12.5
+before_install: gem install bundler -v 1.14.6
+script:
+  - bundle exec rspec -t ~db_integration:true -t ~integration:true

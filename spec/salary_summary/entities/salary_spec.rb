@@ -1,13 +1,13 @@
 require 'spec_helper'
 
 module SalarySummary
-  module Resources
+  module Entities
     describe Salary do
-      subject { described_class.new(amount: 200.0, period: Date.parse('January, 2016')) }
+      let(:id) { BSON::ObjectId.new }
 
-      context 'attributes' do
-        it { is_expected.to have_attributes(id: nil, amount: 200.0, period: Date.parse('January, 2016')) }
-      end
+      it_behaves_like 'a Salary entity as a document'
+
+      subject { described_class.new(id: id, amount: 200.0, period: Date.parse('January, 2016')) }
 
       describe '#year' do
         it 'returns the year of the current salary' do

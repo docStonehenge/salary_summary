@@ -9,6 +9,7 @@ module SalarySummary
       let(:salaries)   { [salary_1, salary_2] }
 
       before do
+        @stdout_clone = $stdout
         $stdout = File.open(File::NULL)
       end
 
@@ -36,6 +37,10 @@ module SalarySummary
             subject.build_sum_footer
           }.to output("Total ---- 450.0\n").to_stdout
         end
+      end
+
+      after do
+        $stdout = @stdout_clone
       end
     end
   end
