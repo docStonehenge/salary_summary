@@ -3,7 +3,7 @@
 require "salary_summary"
 include SalarySummary
 
-dm             = Persistence::DocumentManager.new
+dm             = Persisty::DocumentManager.new
 @repository    = dm.repository_for(Entities::Salary)
 @table_builder = Builders::TableBuilder.new(@repository)
 @information   = ''

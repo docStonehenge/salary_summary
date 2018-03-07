@@ -9,7 +9,7 @@ describe SalarySummary do
     subject = Class.new
 
     expect(
-      SalarySummary::Databases::MongoDB::Client
+      Persisty::Databases::MongoDB::Client
     ).to receive(:set_database_logging).once
 
     subject.include(SalarySummary)

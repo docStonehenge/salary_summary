@@ -1,7 +1,7 @@
 module SalarySummary
   module Repositories
     class SalariesRepository
-      include Base
+      include Persisty::Repositories::Base
 
       def sum_by_amount
         aggregation = sum_aggregation

@@ -7,9 +7,6 @@ shared_examples_for 'a Salary entity as a document' do
     ).to eql SalarySummary::Repositories::SalariesRepository
   end
 
-  it { is_expected.to have_field_defined(:amount, BigDecimal) }
-  it { is_expected.to have_field_defined(:period, Date) }
-
   describe '.fields_list' do
     it 'returns attributes collection set for accessors' do
       expect(described_class.fields_list).to eql [:id, :amount, :period]
