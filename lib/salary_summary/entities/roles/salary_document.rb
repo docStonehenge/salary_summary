@@ -1,10 +1,10 @@
 module SalarySummary
-  module Persistence
-    module DocumentDefinitions
-      module Salary
+  module Entities
+    module Roles
+      module SalaryDocument
         def self.included(klass)
           klass.class_eval do
-            include(Base)
+            include(Persisty::Persistence::DocumentDefinitions::Base)
             extend(ClassMethods)
 
             define_field :amount, type: BigDecimal

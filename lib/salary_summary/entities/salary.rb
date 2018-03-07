@@ -1,7 +1,7 @@
 module SalarySummary
   module Entities
     class Salary
-      include Persistence::DocumentDefinitions::Salary
+      include Roles::SalaryDocument
 
       def year
         period.year
